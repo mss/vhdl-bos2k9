@@ -32,6 +32,12 @@
 --	Autor: xxx
 --	Datum: xxx
 ----------------------------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+
+library fhw_spi;
+use fhw_spi.all;
+
 entity E_SPIMaster is
 	generic(
 		gMode		: integer range 0 to 3;
@@ -51,3 +57,39 @@ entity E_SPIMaster is
 		sck		: out std_logic
 	);
 end E_SPIMaster;
+
+architecture fake of E_SPIMaster is
+component master 
+  generic(
+    clk_div : integer range 0 to 3 := gMode;
+	data_width : positive := gDataWidth;
+	spi_mode : positive := gMode);
+  port(
+    clk : in  std_logic;
+	rst : in  std_logic;
+	
+	start : in  std_logic;
+	busy  : out std_logic;
+	
+	txd   : in  std_logic_vector(gDataWidth - 1 downto 0);
+	rxd   : out std_logic_vector(gDataWidth - 1 downto 0);
+	
+	miso  : in  std_logic;
+	mosi  : out std_logic;
+	sck   : out std_logic);
+end component;
+begin
+  impl : master port map(
+    clk => clk,
+	rst => rst,
+	
+	start => start,
+	busy  => busy,
+	
+	txd   => txData,
+	rxd   => rxData,
+	
+	miso  => miso,
+	mosi  => mosi,
+	sck   => sck);
+end fake;
