@@ -32,14 +32,15 @@ architecture rtl of spi_master is
   constant spi_cpol_c : std_logic := spi_mode_c(0);
   constant spi_cpha_c : std_logic := spi_mode_c(1);
   
-  component spi_trigger_e
+  component spi_counter_e
     generic(
-	  clk_div : positive := clk_div / 2);
+	  count : positive := (clk_div / 2) - 1);
     port(
-      clock : in  std_logic;
-	  reset : in  std_logic;
+      clock  : in  std_logic;
+	  reset  : in  std_ulogic;
+	  enable : in  std_logic;
 	
-	  output : out std_logic);
+	  done : out std_logic);
   end component;
   
   component spi_starter_e
@@ -48,23 +49,23 @@ architecture rtl of spi_master is
       reset   : in  std_logic;
 	
 	  start   : in  std_logic;
-	  trigger : in  std_logic;
 	  stop    : in  std_logic;
     
       status  : out std_logic);
   end component;
   
-  component spi_shifter_e
+  component spi_engine_e
     generic(
       data_width : positive := data_width);
     port(
       clock : in  std_logic;
+	  reset : in  std_ulogic;
 	
-	  trigger : in std_logic;
+	  trigger : in  std_logic;
+	  done    : out std_logic;
 	
 	  data_in  : in  std_logic_vector(data_width - 1 downto 0);
 	  data_out : out std_logic_vector(data_width - 1 downto 0);
-	  load     : in  std_logic;	
 	
 	  spi_in   : in  std_logic;
 	  spi_out  : out std_logic);
@@ -90,7 +91,6 @@ begin
   reset_s <= rst;
   
   start_s <= start and not running_s; -- make sure we don't trigger a start while running
-  --stop_s  <= '0'; --TODO
   busy    <= running_s;
   
   -- Direct output; beware of hazards!
@@ -101,30 +101,31 @@ begin
   mosi <= spi_out_s;
   sck <= spi_clock_s;
   
-  trigger : spi_trigger_e port map(
-    clock  => clock_s,
-	reset  => reset_s,
-	
-	output => trigger_s);
-  
   starter : spi_starter_e port map(
     clock  => clock_s,
 	reset  => reset_s,
 	
 	start   => start_s,
-	trigger => trigger_s,
 	stop    => stop_s,
 	
 	status  => running_s);
 	
-  shifter : spi_shifter_e port map(
+  trigger : spi_counter_e port map(
+    clock  => clock_s,
+	reset  => reset_s,
+	enable => running_s,
+	
+	done   => trigger_s);
+	
+  engine : spi_engine_e port map(
     clock => clock_s,
+	reset => reset_s,
 	
 	trigger => trigger_s,
+	done    => stop_s,
 	
 	data_in  => data_in_s,
 	data_out => data_out_s,
-	load     => start_s,
 	
 	spi_in   => spi_in_s,
 	spi_out  => spi_out_s);
