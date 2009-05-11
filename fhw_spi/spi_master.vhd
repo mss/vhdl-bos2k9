@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 
 -----------------------------------------------------------------------
 
-entity master is
+entity spi_master is
   generic(
     clk_div    : positive;
 	data_width : positive;
@@ -21,11 +21,11 @@ entity master is
 	miso  : in  std_logic;
 	mosi  : out std_logic;
 	sck   : out std_logic);
-end master;
+end spi_master;
 
 -----------------------------------------------------------------------
 
-architecture rtl of master is
+architecture rtl of spi_master is
   
 begin
   

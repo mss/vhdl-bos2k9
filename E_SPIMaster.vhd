@@ -59,7 +59,7 @@ entity E_SPIMaster is
 end E_SPIMaster;
 
 architecture fake of E_SPIMaster is
-component master 
+component spi_master 
   generic(
     clk_div : integer range 0 to 3 := gMode;
 	data_width : positive := gDataWidth;
@@ -79,7 +79,7 @@ component master
 	sck   : out std_logic);
 end component;
 begin
-  impl : master port map(
+  impl : spi_master port map(
     clk => clk,
 	rst => rst,
 	

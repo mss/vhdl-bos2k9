@@ -23,7 +23,7 @@ end bos2k9;
 
 architecture board of bos2k9 is
 
-  component master 
+  component spi_master 
     generic(
       clk_div    : positive := 100;
 	  data_width : positive := data_width;
@@ -53,7 +53,7 @@ begin
   
   start_s <= '0';
   
-  spi_master : master port map(
+  spi_io : spi_master port map(
     clk => clk,
 	rst => rst,
 	
