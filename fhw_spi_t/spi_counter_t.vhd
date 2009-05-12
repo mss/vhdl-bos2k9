@@ -33,13 +33,18 @@ architecture test of spi_counter_t is
 begin
   dut : spi_counter_e port map(clock_s, reset_s, enable_s, done_s);
 
-  enable_s <= '1';
-  
-  -- stimulus : process(clock_s)
-  -- begin
-    -- wait until rising_edge(clock_s);
+  stimulus : process
+  begin
+    enable_s <= '1';
+    wait until rising_edge(done_s);
     
-  -- end process;
+    enable_s <= '0';
+    wait until rising_edge(clock_s);
+    enable_s <= '1';
+    wait until rising_edge(done_s);
+    
+    wait;
+  end process;
   
   reset : process
   begin
