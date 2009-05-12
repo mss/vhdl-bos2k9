@@ -1,6 +1,5 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 -----------------------------------------------------------------------
 
@@ -25,6 +24,8 @@ entity spi_engine_e is
 end spi_engine_e;
 
 -----------------------------------------------------------------------
+
+use ieee.numeric_std.all;
 
 architecture rtl of spi_engine_e is
   component spi_counter_e
