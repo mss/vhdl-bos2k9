@@ -4,3 +4,5 @@ incremental_db/
 export_db/
 simulation/
 *.qws
+*.rpt
+*.bak
