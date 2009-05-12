@@ -33,8 +33,7 @@ begin
 	    if load = '1' then
 		  data_s <= preload;
 	    else
-		  data_s(data_s'low) <= input;
-		  data_s(data_s'high downto data_s'low + 1) <= data_s(data_s'high - 1 downto data_s'low);
+		  data_s <= data_s(data_s'high - 1 downto data_s'low) & input;
 		end if;
 	  end if;
 	end if;

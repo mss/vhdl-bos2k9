@@ -25,6 +25,8 @@ end spi_engine_e;
 
 -----------------------------------------------------------------------
 
+use ieee.numeric_std.all;
+
 architecture rtl of spi_engine_e is
   component spi_counter_e
     generic(
@@ -52,12 +54,19 @@ architecture rtl of spi_engine_e is
 	  output : out std_logic);
   end component;
 
-  type state_t is (
-    start_state_c,
-	latch_state_c,
-	shift_state_c,
-	finis_state_c);
+  -- type state_t is (
+    -- start_state_c,
+	-- latch_state_c,
+	-- shift_state_c,
+	-- finis_state_c);
+  -- signal state_s : state_t;
+  constant state_count_c : positive := 4;
+  subtype state_t is std_logic_vector(state_count_c - 1 downto 0);
   signal state_s : state_t;
+  constant start_state_c : natural := 0;
+  constant latch_state_c : natural := 1;
+  constant shift_state_c : natural := 2;
+  constant finis_state_c : natural := 3;
 
   signal data_s   : std_logic_vector(data_width - 1 downto 0);
   signal buffer_s : std_logic;
@@ -68,45 +77,42 @@ begin
   data_out <= data_s;
   done     <= done_s;
   
-  spi_out  <= data_s(data_s'high);
-  
   spi_clock <= spi_clock_s;
   
   sequence : process(clock, reset, trigger)
   begin
     if reset = '1' then
-	  state_s  <= state_s'low;
+	  state_s <= (start_state_c => '1', others => '0');
 	elsif rising_edge(clock) then
 	  case state_s is
 	  
-	    when start_state_c =>
+	    when (start_state_c => '1', others => '0') =>
 		  if trigger = '1' then
-		    data_s <= data_in; -- snapshot
-			
-		    state_s <= latch_state_c;
+		    state_s(start_state_c) <= '0';
+			state_s(latch_state_c) <= '1';
 		  end if;
 		
-		when latch_state_c =>
+		when (latch_state_c => '1', others => '0') =>
 		  if trigger = '1' then
-		    buffer_s <= spi_in;
-			
-		    state_s <= shift_state_c;
+			state_s(latch_state_c) <= '0';
+			state_s(shift_state_c) <= '1';
 		  end if;
 		
-		when shift_state_c =>
+		when (shift_state_c => '1', others => '0') =>
 		  if trigger = '1' then
-		    data_s(data_s'low) <= buffer_s;
-		    data_s(data_s'high downto data_s'low + 1) <= data_s(data_s'high - 1 downto data_s'low);
-			
-			state_s <= finis_state_c;
+			state_s(shift_state_c) <= '0';
+			state_s(finis_state_c) <= '1';
 		  end if;
 		
-		when finis_state_c =>
+		when (finis_state_c => '1', others => '0') =>
+		  state_s(finis_state_c) <= '0';
           if done_s = '0' then
-		    state_s <= latch_state_c;
+		    state_s(latch_state_c) <= '1';
 		  else
-		    state_s <= start_state_c;
-		  end if;		
+		    state_s(start_state_c) <= '1';
+		  end if;
+
+        when others => null;		  
 	  
 	  end case;
 	end if;
@@ -118,25 +124,33 @@ begin
 	  spi_clock_s <= spi_cpol;
 	elsif rising_edge(clock) then
 	  if trigger = '1' then
-	    case state_s is
-		  when start_state_c =>
-		    if spi_cpha = '1' then
-		      spi_clock_s <= not spi_clock_s;
-		    end if;
-		  when others =>
+	    if state_s(start_state_c) = '1' then
+		  if spi_cpha = '1' then
 		    spi_clock_s <= not spi_clock_s;
-	    end case;
+		  end if;
+		else
+		  spi_clock_s <= not spi_clock_s;
+		end if;
+	  end if;
+	end if;
+  end process;
+  
+  buffar : process(clock, reset, trigger)
+  begin
+    if rising_edge(clock) then
+	  if (state_s(latch_state_c) and trigger) = '1' then
+	    buffer_s <= spi_in;
 	  end if;
 	end if;
   end process;
   
   shifter : spi_shifter_e port map(
     clock  => clock,
-	enable => trigger and (state_s = shift_state_c), --TODO
+	enable => state_s(shift_state_c) and trigger, --TODO
 	
 	preload => data_in,
-	load    => trigger and (state_s = start_state_c),
-	data    => data_out,
+	load    => state_s(start_state_c) and trigger,
+	data    => data_s,
 	
 	input  => buffer_s,
 	output => spi_out);
