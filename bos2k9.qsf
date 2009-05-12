@@ -43,7 +43,11 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name FLOW_ENABLE_RTL_VIEWER ON
 set_global_assignment -name SMART_RECOMPILE ON
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY out
-set_global_assignment -name VHDL_FILE fhw_spi_t/spi_counter_t.vhd -library fhw_spi_t
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
+set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 set_global_assignment -name VHDL_FILE fhw_spi/spi_shifter_e.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE fhw_spi/spi_counter_e.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE fhw_spi/spi_engine_e.vhd -library fhw_spi
@@ -51,8 +55,3 @@ set_global_assignment -name VHDL_FILE fhw_spi/spi_starter_e.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE fhw_spi/spi_master.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE bos2k9.vhd
 set_global_assignment -name VHDL_FILE E_SPIMaster.vhd
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
-set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
