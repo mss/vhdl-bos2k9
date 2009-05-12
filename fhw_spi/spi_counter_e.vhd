@@ -17,7 +17,7 @@ end spi_counter_e;
 -----------------------------------------------------------------------
 
 architecture rtl of spi_counter_e is
-  signal count_s : natural range 0 to count;
+  signal count_s : natural range 0 to count - 1;
 begin
   process(clock, reset, enable)
   begin

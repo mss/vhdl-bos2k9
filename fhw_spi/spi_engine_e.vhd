@@ -6,8 +6,8 @@ use ieee.std_logic_1164.all;
 entity spi_engine_e is
   generic(
     data_width : positive;
-	spi_cpol : std_ulogic := '0';
-	spi_cpha : std_ulogic := '0');
+	spi_cpol : std_ulogic;
+	spi_cpha : std_ulogic);
   port(
     clock : in  std_logic;
 	reset : in  std_ulogic;
@@ -28,7 +28,7 @@ end spi_engine_e;
 architecture rtl of spi_engine_e is
   component spi_counter_e
     generic(
-	  count : positive := data_width * 2 + 1);
+	  count : positive := data_width * 2);
     port(
       clock  : in  std_logic;
 	  reset  : in  std_ulogic;
