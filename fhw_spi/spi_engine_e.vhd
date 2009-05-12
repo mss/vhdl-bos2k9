@@ -79,46 +79,35 @@ begin
   
   spi_clock <= spi_clock_s;
   
-  sequence : process(clock, reset, trigger)
+  sequence : process(clock, reset, trigger, state_s)
   begin
     if reset = '1' then
 	  state_s <= (start_state_c => '1', others => '0');
 	elsif rising_edge(clock) then
-	  case state_s is
-	  
-	    when (start_state_c => '1', others => '0') =>
-		  if trigger = '1' then
-		    state_s(start_state_c) <= '0';
-			state_s(latch_state_c) <= '1';
-		  end if;
-		
-		when (latch_state_c => '1', others => '0') =>
-		  if trigger = '1' then
-			state_s(latch_state_c) <= '0';
-			state_s(shift_state_c) <= '1';
-		  end if;
-		
-		when (shift_state_c => '1', others => '0') =>
-		  if trigger = '1' then
-			state_s(shift_state_c) <= '0';
-			state_s(finis_state_c) <= '1';
-		  end if;
-		
-		when (finis_state_c => '1', others => '0') =>
-		  state_s(finis_state_c) <= '0';
-          if done_s = '0' then
-		    state_s(latch_state_c) <= '1';
-		  else
-		    state_s(start_state_c) <= '1';
-		  end if;
-
-        when others => null;		  
-	  
-	  end case;
+	  if (state_s(start_state_c) and trigger) = '1' then
+        state_s(start_state_c) <= '0';
+		state_s(latch_state_c) <= '1';
+	  end if;
+	  if (state_s(latch_state_c) and trigger) = '1' then
+        state_s(latch_state_c) <= '0';
+		state_s(shift_state_c) <= '1';
+	  end if;
+      if (state_s(shift_state_c) and trigger) = '1' then
+	    state_s(shift_state_c) <= '0';
+		state_s(finis_state_c) <= '1';
+	  end if;
+      if (state_s(finis_state_c)) = '1' then
+	    state_s(finis_state_c) <= '0';
+        if done_s = '0' then
+		  state_s(latch_state_c) <= '1';
+		else
+		  state_s(start_state_c) <= '1';
+		end if;
+	  end if;
 	end if;
   end process;
   
-  clocker : process(clock, reset, trigger)
+  clocker : process(clock, reset, trigger, state_s)
   begin
     if reset = '1' then
 	  spi_clock_s <= spi_cpol;
@@ -135,12 +124,10 @@ begin
 	end if;
   end process;
   
-  buffar : process(clock, reset, trigger)
+  latcher : process(trigger, state_s)
   begin
-    if rising_edge(clock) then
-	  if (state_s(latch_state_c) and trigger) = '1' then
-	    buffer_s <= spi_in;
-	  end if;
+    if (state_s(latch_state_c) and trigger) = '1' then
+	  buffer_s <= spi_in;
 	end if;
   end process;
   
