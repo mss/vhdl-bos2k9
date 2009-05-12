@@ -36,6 +36,21 @@ architecture rtl of spi_engine_e is
 	
 	  done : out std_logic);
   end component;
+  
+  component spi_shifter_e
+    generic(
+      data_width : positive := data_width);
+    port(
+      clock  : in  std_logic;
+	  enable : in  std_logic;
+	
+	  preload : in  std_logic_vector(data_width - 1 downto 0);
+	  load    : in  std_logic;
+	  data    : out std_logic_vector(data_width - 1 downto 0);
+	
+	  input  : in  std_logic;
+	  output : out std_logic);
+  end component;
 
   type state_t is (
     start_state_c,
@@ -114,6 +129,17 @@ begin
 	  end if;
 	end if;
   end process;
+  
+  shifter : spi_shifter_e port map(
+    clock  => clock,
+	enable => trigger and (state_s = shift_state_c), --TODO
+	
+	preload => data_in,
+	load    => trigger and (state_s = start_state_c),
+	data    => data_out,
+	
+	input  => buffer_s,
+	output => spi_out);
   
   counter : spi_counter_e port map(
     clock  => clock,

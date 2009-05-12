@@ -7,7 +7,7 @@ entity spi_master is
   generic(
     clk_div    : positive := 10;
 	data_width : positive :=  8;
-	spi_mode   : integer range 0 to 3) := 0;
+	spi_mode   : integer range 0 to 3 := 0);
   port(
     clk : in  std_logic;
 	rst : in  std_logic;
@@ -56,7 +56,7 @@ architecture rtl of spi_master is
   
   component spi_engine_e
     generic(
-      data_width : positive := data_width
+      data_width : positive := data_width;
 	  spi_cpol   : std_logic := spi_cpol_c;
 	  spi_cpha   : std_logic := spi_cpha_c);
     port(
