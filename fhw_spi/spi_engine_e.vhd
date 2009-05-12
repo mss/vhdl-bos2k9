@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 -----------------------------------------------------------------------
 
@@ -24,8 +25,6 @@ entity spi_engine_e is
 end spi_engine_e;
 
 -----------------------------------------------------------------------
-
-use ieee.numeric_std.all;
 
 architecture rtl of spi_engine_e is
   component spi_counter_e
@@ -73,6 +72,9 @@ architecture rtl of spi_engine_e is
   signal done_s   : std_logic;
   
   signal spi_clock_s : std_logic;
+  
+  signal shifter_load_s : std_logic;
+  signal shifter_trig_s : std_logic;
 begin
   data_out <= data_s;
   done     <= done_s;
@@ -131,12 +133,14 @@ begin
 	end if;
   end process;
   
+  shifter_load_s <= state_s(start_state_c) and trigger;
+  shifter_trig_s <= state_s(shift_state_c) and trigger;
   shifter : spi_shifter_e port map(
     clock  => clock,
-	enable => state_s(shift_state_c) and trigger, --TODO
+	enable => shifter_trig_s,
 	
 	preload => data_in,
-	load    => state_s(start_state_c) and trigger,
+	load    => shifter_load_s,
 	data    => data_s,
 	
 	input  => buffer_s,

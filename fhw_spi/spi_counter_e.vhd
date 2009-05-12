@@ -17,7 +17,8 @@ end spi_counter_e;
 -----------------------------------------------------------------------
 
 architecture rtl of spi_counter_e is
-  signal count_s : natural range 0 to count - 1;
+  subtype count_t is natural range 0 to count - 1;
+  signal count_s : count_t;
 begin
   process(clock, reset, enable)
   begin
@@ -26,9 +27,9 @@ begin
 	  count_s <= 0;
     elsif rising_edge(clock) then
 	  done  <= '0';
-	  count_s <= count_s'low;
+	  count_s <= count_t'low;
 	  if enable = '1' then
-	    if count_s = count_s'high then
+	    if count_s = count_t'high then
 		  done <= '1';
 	    else
 	      count_s <= count_s + 1;

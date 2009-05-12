@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 -----------------------------------------------------------------------
 
@@ -24,8 +25,6 @@ entity spi_master is
 end spi_master;
 
 -----------------------------------------------------------------------
-
-use ieee.numeric_std.all;
 
 architecture rtl of spi_master is
   constant spi_mode_c : unsigned(1 downto 0) := to_unsigned(spi_mode, 2);
