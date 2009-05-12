@@ -3,3 +3,4 @@ db/
 incremental_db/
 export_db/
 simulation/
+*.qws
