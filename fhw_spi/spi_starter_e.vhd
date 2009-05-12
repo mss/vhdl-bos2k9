@@ -7,9 +7,9 @@ entity spi_starter_e is
   port(
     clock   : in  std_logic;
     reset   : in  std_logic;
-	
-	start   : in  std_logic;
-	stop    : in  std_logic;
+    
+    start   : in  std_logic;
+    stop    : in  std_logic;
     
     status  : out std_logic);
 end spi_starter_e;
@@ -23,13 +23,13 @@ begin
   
   runner : process(clock, reset, stop)
   begin
-	if reset = '1' then
-	  running_s <= '0';
-	elsif rising_edge(clock) then
-	  if (start or stop) = '1' then
-	    running_s <= start and not stop;
-	  end if;
-	end if;
+    if reset = '1' then
+      running_s <= '0';
+    elsif rising_edge(clock) then
+      if (start or stop) = '1' then
+        running_s <= start and not stop;
+      end if;
+    end if;
   end process;
 
 end rtl;
