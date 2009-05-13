@@ -34,6 +34,8 @@ architecture rtl of spi_engine_e is
       clock  : in  std_logic;
 	  reset  : in  std_ulogic;
 	  enable : in  std_logic;
+      
+      override : in std_logic;
 	
 	  done : out std_logic);
   end component;
@@ -150,6 +152,8 @@ begin
     clock  => clock,
 	reset  => reset,
 	enable => trigger,
+    
+    override => '0',
 	
 	done => done_s);
 

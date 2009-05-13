@@ -38,6 +38,8 @@ architecture rtl of spi_master is
       clock  : in  std_logic;
 	  reset  : in  std_ulogic;
 	  enable : in  std_logic;
+      
+      override : in std_logic;
 	
 	  done : out std_logic);
   end component;
@@ -115,6 +117,8 @@ begin
     clock  => clock_s,
 	reset  => reset_s,
 	enable => running_s,
+    
+    override => start_s,
 	
 	done   => trigger_s);
 	
@@ -130,53 +134,5 @@ begin
 	
 	spi_in   => spi_in_s,
 	spi_out  => spi_out_s);
-	
-	
-  -- engine : spi_engine_e port map(
-    -- clock => clock_s,
-	-- reset => reset_s,
-	
-	-- running => status_s,
-	-- trigger => trigger_s,
-	
-	
-	-- done    => stop_s,
-	
-	
-  -- );
-  
-  
-
-  -- spi_gen : process(clock_s, reset_s, running_s, trigger_s)
-    -- variable old_running_v : std_logic;
-    -- variable old_clock_v : std_logic;
-  -- begin
-    -- if reset_s = '1' then
-	  -- spi_out_s   <= '0';
-	  -- spi_clock_s <= spi_cpol_c;
-	-- elsif rising_edge(clock_s) then
-	  -- if running_s = '1' and trigger_s = '1' then
-	    -- old_clock_v := spi_clock_s;
-	    -- spi_clock_s <= not spi_clock_s;
-		
-		-- if old_clock_v = spi_cpol_c then
-		  -- if spi_cpha_c = '0' then
-		    -- spi_out_s <= data_s(0);
-		    -- data_s(6 downto 0) <= data_s(7 downto 1);
-			
-		  -- else
-		    
-		  -- end if;
-		-- else
-		  -- if spi_cpha_c = '1' then
-		    -- spi_out_s <= data_s(0);
-			-- data_s(6 downto 0) <= data_s(7 downto 1);
-		  -- else
-		    
-		  -- end if;
-		-- end if;
-	  -- end if;
-	-- end if;
-  -- end process;
   
 end rtl;

@@ -22,27 +22,57 @@ architecture test of spi_counter_t is
       clock  : in  std_logic;
       reset  : in  std_logic;
       enable : in  std_logic;
+      
+      override : in std_logic;
 
       done : out std_logic);
   end component;
+  
+  signal test_s : natural;
 
   signal clock_s : std_logic;
   signal reset_s : std_logic;
   signal enable_s : std_logic;
+  signal override_s : std_logic;
   signal done_s : std_logic;
 begin
-  dut : spi_counter_e port map(clock_s, reset_s, enable_s, done_s);
+  dut : spi_counter_e port map(clock_s, reset_s, enable_s, override_s, done_s);
 
   stimulus : process
   begin
+    test_s <= 0;
     enable_s <= '1';
-    wait until rising_edge(done_s);
+    override_s <= '0';
+    wait until falling_edge(reset_s); test_s <= test_s + 1;
+    
+    wait until rising_edge(done_s); test_s <= test_s + 1;
+    
+    wait until rising_edge(done_s); test_s <= test_s + 1;
     
     enable_s <= '0';
-    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
     enable_s <= '1';
+    
+    wait until rising_edge(done_s); test_s <= test_s + 1;
+    
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    override_s <= '1';
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    override_s <= '0';
+    
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    override_s <= '1';
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    override_s <= '0';
+    
     wait until rising_edge(done_s);
     
+    test_s <= test_s + 1;
     wait;
   end process;
   

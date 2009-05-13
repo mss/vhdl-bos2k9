@@ -29,6 +29,8 @@ architecture test of spi_shifter_t is
       input  : in  std_logic;
       output : out std_logic);
   end component;
+  
+  signal test_s : integer;
 
   signal clock_s  : std_logic;
   signal reset_s  : std_logic;
@@ -43,22 +45,35 @@ begin
 
   stimulus : process
   begin
+    test_s <= -4;
     enable_s <= '0';
     load_s   <= '0';
-    input_s  <= '0';
-    wait until falling_edge(reset_s);
+    input_s  <= 'U';
+    wait until falling_edge(reset_s); test_s <= test_s + 1;
     
     preload_s <= "1100";
     load_s    <= '1';
-    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
     preload_s <= "UUUU";
     load_s    <= '0';
     
-    wait until rising_edge(clock_s);
-    input_s <= '1';
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    input_s <= 'H';
     
-    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
     enable_s <= '1';
+    
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    input_s <= 'L';
+    
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    input_s <= 'H';
+    
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    input_s <= 'L';
+    
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
+    input_s <= 'U';
     
     wait;
   end process;
