@@ -98,11 +98,11 @@ begin
   input : process
   begin
     spi_in_a_s  <= 'L';
-    wait until falling_edge(trigger_s);
-    wait until falling_edge(trigger_s);
+    wait until rising_edge(trigger_s);
+    wait until rising_edge(trigger_s);
     spi_in_a_s  <= 'H';
-    wait until falling_edge(trigger_s);
-    wait until falling_edge(trigger_s);
+    wait until rising_edge(trigger_s);
+    wait until rising_edge(trigger_s);
   end process;
   
   reset : process

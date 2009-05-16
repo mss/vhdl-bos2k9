@@ -8,12 +8,12 @@ entity spi_counter_e is
     count : positive);
   port(
     clock  : in  std_logic;
-	reset  : in  std_logic;
-	enable : in  std_logic;
+    reset  : in  std_logic;
+    enable : in  std_logic;
     
     override : in std_logic;
-	
-	done : out std_logic);
+    
+    done : out std_logic);
 end spi_counter_e;
 
 -----------------------------------------------------------------------
@@ -26,17 +26,17 @@ begin
   begin
     if reset = '1' then
       count_s <= 0;
-	  done    <= '0';
+      done    <= '0';
     elsif rising_edge(clock) then
       done <= '0';
-	  if (enable or override) = '1' then
+      if (enable or override) = '1' then
         if (count_s = count_t'high) or (override = '1') then
           count_s <= count_t'low;
-		  done <= '1';
-	    else
+          done <= '1';
+        else
           count_s <= count_s + 1;
-		end if;
-	  end if;
-	end if;
+        end if;
+      end if;
+    end if;
   end process;
 end rtl;

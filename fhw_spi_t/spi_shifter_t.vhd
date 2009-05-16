@@ -25,7 +25,7 @@ architecture test of spi_shifter_t is
       preload : in  std_logic_vector(data_width - 1 downto 0);
       load    : in  std_logic;
       data    : out std_logic_vector(data_width - 1 downto 0);
-	
+    
       input  : in  std_logic;
       output : out std_logic);
   end component;

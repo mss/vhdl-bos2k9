@@ -7,21 +7,21 @@ use ieee.numeric_std.all;
 entity spi_master is
   generic(
     clk_div    : positive := 10;
-	data_width : positive :=  8;
-	spi_mode   : integer range 0 to 3 := 0);
+    data_width : positive :=  8;
+    spi_mode   : integer range 0 to 3 := 0);
   port(
     clk : in  std_logic;
-	rst : in  std_logic;
-	
-	start : in  std_logic;
-	busy  : out std_logic;
-	
-	txd   : in  std_logic_vector(data_width - 1 downto 0);
-	rxd   : out std_logic_vector(data_width - 1 downto 0);
-	
-	miso  : in  std_logic;
-	mosi  : out std_logic;
-	sck   : out std_logic);
+    rst : in  std_logic;
+    
+    start : in  std_logic;
+    busy  : out std_logic;
+    
+    txd   : in  std_logic_vector(data_width - 1 downto 0);
+    rxd   : out std_logic_vector(data_width - 1 downto 0);
+    
+    miso  : in  std_logic;
+    mosi  : out std_logic;
+    sck   : out std_logic);
 end spi_master;
 
 -----------------------------------------------------------------------
@@ -33,24 +33,24 @@ architecture rtl of spi_master is
   
   component spi_counter_e
     generic(
-	  count : positive := clk_div / 2);
+      count : positive := clk_div / 2); -- TODO: odd clk_div? TODO: min: 6
     port(
       clock  : in  std_logic;
-	  reset  : in  std_ulogic;
-	  enable : in  std_logic;
+      reset  : in  std_ulogic;
+      enable : in  std_logic;
       
       override : in std_logic;
-	
-	  done : out std_logic);
+    
+      done : out std_logic);
   end component;
   
   component spi_starter_e
     port(
       clock   : in  std_logic;
       reset   : in  std_logic;
-	
-	  start   : in  std_logic;
-	  stop    : in  std_logic;
+    
+      start   : in  std_logic;
+      stop    : in  std_logic;
     
       status  : out std_logic);
   end component;
@@ -58,20 +58,21 @@ architecture rtl of spi_master is
   component spi_engine_e
     generic(
       data_width : positive := data_width;
-	  spi_cpol   : std_logic := spi_cpol_c;
-	  spi_cpha   : std_logic := spi_cpha_c);
+      spi_cpol   : std_logic := spi_cpol_c;
+      spi_cpha   : std_logic := spi_cpha_c);
     port(
       clock : in  std_logic;
-	  reset : in  std_ulogic;
-	
-	  trigger : in  std_logic;
-	  done    : out std_logic;
-	
-	  data_in  : in  std_logic_vector(data_width - 1 downto 0);
-	  data_out : out std_logic_vector(data_width - 1 downto 0);
-	
-	  spi_in   : in  std_logic;
-	  spi_out  : out std_logic);
+      reset : in  std_ulogic;
+    
+      trigger : in  std_logic;
+      done    : out std_logic;
+    
+      data_in  : in  std_logic_vector(data_width - 1 downto 0);
+      data_out : out std_logic_vector(data_width - 1 downto 0);
+    
+      spi_in    : in  std_logic;
+      spi_out   : out std_logic;
+      spi_clock : out std_logic);
   end component;
 
   signal clock_s : std_logic;
@@ -106,33 +107,34 @@ begin
   
   starter : spi_starter_e port map(
     clock  => clock_s,
-	reset  => reset_s,
-	
-	start   => start_s,
-	stop    => stop_s,
-	
-	status  => running_s);
-	
+    reset  => reset_s,
+    
+    start   => start_s,
+    stop    => stop_s,
+    
+    status  => running_s);
+    
   trigger : spi_counter_e port map(
     clock  => clock_s,
-	reset  => reset_s,
-	enable => running_s,
+    reset  => reset_s,
+    enable => running_s,
     
     override => start_s,
-	
-	done   => trigger_s);
-	
+    
+    done   => trigger_s);
+    
   engine : spi_engine_e port map(
     clock => clock_s,
-	reset => reset_s,
-	
-	trigger => trigger_s,
-	done    => stop_s,
-	
-	data_in  => data_in_s,
-	data_out => data_out_s,
-	
-	spi_in   => spi_in_s,
-	spi_out  => spi_out_s);
+    reset => reset_s,
+    
+    trigger => trigger_s,
+    done    => stop_s,
+    
+    data_in  => data_in_s,
+    data_out => data_out_s,
+    
+    spi_in    => spi_in_s,
+    spi_out   => spi_out_s,
+    spi_clock => spi_clock_s);
   
 end rtl;

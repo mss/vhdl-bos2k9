@@ -18,9 +18,9 @@ architecture test of spi_starter_t is
     port(
       clock   : in  std_logic;
       reset   : in  std_logic;
-	
-	  start   : in  std_logic;
-	  stop    : in  std_logic;
+    
+      start   : in  std_logic;
+      stop    : in  std_logic;
     
       status  : out std_logic);
   end component;
