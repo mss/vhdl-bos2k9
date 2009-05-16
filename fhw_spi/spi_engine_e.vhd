@@ -29,7 +29,7 @@ end spi_engine_e;
 architecture rtl of spi_engine_e is
   component spi_counter_e
     generic(
-      count : positive := data_width * 2 + 1);
+      count : positive  := data_width * 2 + 1);
     port(
       clock  : in  std_logic;
       reset  : in  std_ulogic;
@@ -62,6 +62,7 @@ architecture rtl of spi_engine_e is
   constant latch_state_c : natural := 1;
   constant shift_state_c : natural := 2;
   constant finis_state_c : natural := 3;
+  --TODO: clock_state_c
 
   signal data_s   : std_logic_vector(data_width - 1 downto 0);
   signal buffer_s : std_logic;
@@ -111,21 +112,23 @@ begin
       spi_clock_s <= spi_cpol;
     elsif rising_edge(clock) then
       if trigger = '1' then
-        if state_s(start_state_c) = '1' then
+        if state_s(start_state_c) = '0' then
+          spi_clock_s <= not spi_clock_s;
+        else
           if spi_cpha = '1' then
             spi_clock_s <= not spi_clock_s;
           end if;
-        else
-          spi_clock_s <= not spi_clock_s;
         end if;
       end if;
     end if;
   end process;
   
-  latcher : process(trigger, state_s)
+  latcher : process(clock, trigger, state_s)
   begin
-    if (state_s(latch_state_c) and trigger) = '1' then
-      buffer_s <= spi_in;
+    if rising_edge(clock) then
+      if (state_s(latch_state_c) and trigger) = '1' then
+        buffer_s <= spi_in;
+      end if;
     end if;
   end process;
   

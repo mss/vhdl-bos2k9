@@ -28,12 +28,13 @@ end spi_master;
 
 architecture rtl of spi_master is
   constant spi_mode_c : unsigned(1 downto 0) := to_unsigned(spi_mode, 2);
-  constant spi_cpol_c : std_logic := spi_mode_c(0);
-  constant spi_cpha_c : std_logic := spi_mode_c(1);
+  constant spi_cpol_c : std_logic := spi_mode_c(1);
+  constant spi_cpha_c : std_logic := spi_mode_c(0);
   
   component spi_counter_e
     generic(
-      count : positive := clk_div / 2); -- TODO: odd clk_div? TODO: min: 6
+      count : positive := clk_div / 2; -- TODO: odd clk_div? TODO: min: 6
+      edge  : std_logic := '0');
     port(
       clock  : in  std_logic;
       reset  : in  std_ulogic;

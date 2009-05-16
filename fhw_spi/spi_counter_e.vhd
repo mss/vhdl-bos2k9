@@ -5,7 +5,8 @@ use ieee.std_logic_1164.all;
 
 entity spi_counter_e is
   generic(
-    count : positive);
+    count : positive;
+    edge  : std_logic := '1');
   port(
     clock  : in  std_logic;
     reset  : in  std_logic;
@@ -27,7 +28,7 @@ begin
     if reset = '1' then
       count_s <= 0;
       done    <= '0';
-    elsif rising_edge(clock) then
+    elsif clock'event and clock = edge then
       done <= '0';
       if (enable or override) = '1' then
         if (count_s = count_t'high) or (override = '1') then

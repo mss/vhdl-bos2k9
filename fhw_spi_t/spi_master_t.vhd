@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library fhw_spi;
 use fhw_spi.all;
@@ -17,6 +18,10 @@ end spi_master_t;
 -----------------------------------------------------------------------
 
 architecture test of spi_master_t is
+  constant spi_mode_c : unsigned(1 downto 0) := to_unsigned(spi_mode, 2);
+  constant spi_cpol_c : std_logic := spi_mode_c(1);
+  constant spi_cpha_c : std_logic := spi_mode_c(0);
+
   component spi_master is
     generic(
       clk_div    : positive;
@@ -51,6 +56,9 @@ architecture test of spi_master_t is
   signal miso_s  : std_logic;
   signal mosi_s  : std_logic;
   signal sck_s   : std_logic;
+  
+  signal ss_n    : std_logic;
+  signal data_s  : std_logic_vector(data_width - 1 downto 0);
 begin
   dut : spi_master generic map(clock_divider, data_width, spi_mode) port map(clock_s, reset_s, start_s, busy_s, txd_s, rxd_s, miso_s, mosi_s, sck_s);
   
@@ -77,6 +85,31 @@ begin
     miso_s <= 'Z';
     
     wait;
+  end process;
+  
+  ss_n <= not (start_s or busy_s);
+  sample : process
+    variable count_v : integer;
+  begin
+    data_s <= (others => 'U');
+    if spi_cpha_c = '0' then
+      count_v := 0;
+    else
+      count_v := -1;
+    end if;
+    wait until falling_edge(ss_n);
+    
+    while ss_n = '0' loop
+      wait until sck_s'event or ss_n'event;
+      if ss_n = '0' then
+        count_v := count_v + 1;
+        if (count_v mod 2) = 1 then
+          data_s(0) <= mosi_s;
+        else
+          data_s <= data_s(data_width - 2 downto 0) & data_s(data_width - 1);
+        end if;
+      end if;
+    end loop;
   end process;
   
   reset : process
