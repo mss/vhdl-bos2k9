@@ -1,7 +1,19 @@
+-----------------------------------------------------------------------
+-- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
+--
+-- This is a helper entity which manages the busy line, wired to the
+-- output `status`. It will go high once `start` was seen high and
+-- stay like this until `stop` occurs. The latter overrides the line.
+--
+-- It is driven by `clock` on the rising edge and `reset` is active
+-- high.
+-----------------------------------------------------------------------
+-- This entity is part of the following library:
+-- pragma library fhw_spi
+library fhw_spi;
+
 library ieee;
 use ieee.std_logic_1164.all;
-
------------------------------------------------------------------------
 
 entity spi_starter_e is
   port(

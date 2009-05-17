@@ -1,9 +1,15 @@
+-----------------------------------------------------------------------
+-- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
+-----------------------------------------------------------------------
+-- This entity is part of the following library:
+-- pragma library fhw_spi_t
+library fhw_spi_t;
+library fhw_spi;
+use fhw_spi.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
-library fhw_spi;
-use fhw_spi.all;
 
 -----------------------------------------------------------------------
 
@@ -80,7 +86,6 @@ begin
     start_s <= '1';
     
     wait until rising_edge(clock_s); test_s <= test_s + 1;
-    start_s <= '0';
     
     wait until rising_edge(clock_s); test_s <= test_s + 1;
     txd_s  <= (others => 'U');
@@ -93,9 +98,14 @@ begin
     
       wait until rising_edge(clock_s); test_s <= test_s + 1;
       txd_s  <= txd_s xor txd_pattern;
-    
+      
       wait until falling_edge(busy_s); test_s <= test_s + 1;
-      start_s <= '1';
+    
+      -- while busy_s = '1' loop
+        -- wait until rising_edge(clock_s);
+      -- end loop;
+      -- test_s <= test_s + 1;
+      -- start_s <= '1';
     
       wait until rising_edge(clock_s); test_s <= test_s + 1;
       start_s <= '0';
@@ -104,6 +114,7 @@ begin
       txd_s  <= (others => 'U');
     end loop;
     
+    start_s <= '0';
     wait;
   end process;
   
@@ -144,7 +155,7 @@ begin
     
     assert simo_s = data_v      report "neq:txd";
     assert rxd_s  = rxd_pattern report "neq:rxd";
-    wait until rising_edge(clock_s);
+    wait until falling_edge(clock_s);
   end process;
   
   reset : process

@@ -1,7 +1,23 @@
+-----------------------------------------------------------------------
+-- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
+--
+-- This is a helper entity implementing a counter. It is driven by
+-- `clock` on the edge specified by the generic `edge` (low means
+-- falling edge, high means rising). `reset` is active high.
+--
+-- While `enable` is high, it counts the number of ticks given via the
+-- generic `count`. When reached, `done` is high for exactly one
+-- `clock` (even if `enable` goes low).
+--
+-- It is possible to override and reset the counter by driving
+-- `override` high; `done` is high while `override` is high.
+-----------------------------------------------------------------------
+-- This entity is part of the following library:
+-- pragma library fhw_spi
+library fhw_spi;
+
 library ieee;
 use ieee.std_logic_1164.all;
-
------------------------------------------------------------------------
 
 entity spi_counter_e is
   generic(

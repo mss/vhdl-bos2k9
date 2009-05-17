@@ -1,13 +1,53 @@
+-----------------------------------------------------------------------
+-- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
+--
+-- This SPI master processes the serial 4-wire full duplex bus-protocol
+-- called SPI (Serial Peripheral Interface), also known as Microwire.
+-- The four lines used by SPI are called MISO (Master In Slave Out,
+-- input `miso`), MOSI (Master Out Slave In, output `mosi`), SCK
+-- (Serial ClocK, output `sck`) and SS (Slave Select, low active, can
+-- be derived from the `busy` line).
+--
+-- SPI can operate with varying frame sizes which can be specified
+-- via the generic `data_width`, defaulting to eigth bit. The two
+-- bit wide generic `spi_mode` is for compatibility to devices which 
+-- do not use the default mode 0; the low bit is also known as CPHA
+-- (Clock PHAse), the high bit as CPOL (Clock POLarity). When CPHA is
+-- set, the first SCK edge is ignored; when CPOL is set, the polarity
+-- of the SCK is inverted (ie. SCK is low active).
+-- 
+-- The maximum speed of the SPI bus depends on the maximum speed of 
+-- both master and slave and can be changed via the generic `clk_div`
+-- which must be even and greater or equal than six.
+--
+-- For more information and details on SPI see
+--   http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus
+--
+-- This entity is synchronized on the rising edge of the clock `clk`
+-- and the reset line `rst` is high active.
+-- 
+-- It is idle until `start` goes high. Data to be transmitted over SPI
+-- must be stable on `txd` at that point and be held stable for one
+-- `clk` cycle afterwards. Then, next data can be prepared.
+
+-- While data is shifted, the `busy` line is high and `start` is
+-- ignored. Even if `start` stays high all the time, `busy` will go
+-- low for one `clk` cycle when all data is shifted out to signal a
+-- stable output on `rxd`. The state of the latter is undefined (ie.
+-- not stable) while `busy` is high.
+-----------------------------------------------------------------------
+-- This entity is part of the following library:
+-- pragma library fhw_spi
+library fhw_spi;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
------------------------------------------------------------------------
-
 entity spi_master is
   generic(
-    clk_div    : positive := 10;
-    data_width : positive :=  8;
+    clk_div    : positive := 6;
+    data_width : positive := 8;
     spi_mode   : integer range 0 to 3 := 0);
   port(
     clk : in  std_logic;
@@ -33,7 +73,7 @@ architecture rtl of spi_master is
   
   component spi_counter_e
     generic(
-      count : positive := clk_div / 2; -- TODO: odd clk_div? TODO: min: 6
+      count : positive := clk_div / 2;
       edge  : std_logic := '0');
     port(
       clock  : in  std_logic;
@@ -92,6 +132,9 @@ architecture rtl of spi_master is
   signal spi_out_s   : std_logic;
   signal spi_clock_s : std_logic;
 begin
+  assert clk_div >= 6      report "clk_div can not be lower than 6" severity error;
+  assert clk_div mod 2 = 0 report "clk_div will be rounded down to the next even value" severity warning;
+
   clock_s <= clk;
   reset_s <= rst;
   

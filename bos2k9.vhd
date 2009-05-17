@@ -25,7 +25,7 @@ architecture board of bos2k9 is
 
   component spi_master 
     generic(
-      clk_div    : positive := 100;
+      clk_div    : positive := 8;
       data_width : positive := data_width;
       spi_mode   : integer range 0 to 3 := 0);
     port(

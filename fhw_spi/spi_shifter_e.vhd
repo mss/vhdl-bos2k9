@@ -1,7 +1,22 @@
+-----------------------------------------------------------------------
+-- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
+--
+-- This is a helper entity implementing a shift register. It is driven
+-- by `clock` on the rising edge. As it doesn't have a reset line, the
+-- initial state is undefined but can be preset parallely by `preload`
+-- while `load` is high.
+--
+-- While `enable` is high, each `clock` the `data` is shifted left and
+-- the lowest bit is filled up with `input`. Data is NOT shifted out
+-- into `output` but discared; `output` is simply wired to the top
+-- `data` bit.
+-----------------------------------------------------------------------
+-- This entity is part of the following library:
+-- pragma library fhw_spi
+library fhw_spi;
+
 library ieee;
 use ieee.std_logic_1164.all;
-
------------------------------------------------------------------------
 
 entity spi_shifter_e is
   generic(

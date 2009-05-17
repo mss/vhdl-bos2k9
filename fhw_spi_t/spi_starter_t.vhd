@@ -1,10 +1,14 @@
-library ieee;
-use ieee.std_logic_1164.all;
-
+-----------------------------------------------------------------------
+-- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
+-----------------------------------------------------------------------
+-- This entity is part of the following library:
+-- pragma library fhw_spi_t
+library fhw_spi_t;
 library fhw_spi;
 use fhw_spi.all;
 
------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
 
 entity spi_starter_t is
   generic(

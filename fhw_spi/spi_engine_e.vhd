@@ -1,8 +1,33 @@
+-----------------------------------------------------------------------
+-- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
+--
+-- This is a helper entity implementing the main logic (including the
+-- state machine) of the SPI master. It is driven by `clock` on the
+-- rising edge but it is assumed that the `trigger` wired in by the
+-- parent entity is driven on the falling edge to avoid timing issues.
+-- `reset` is active high.
+--
+-- When `trigger` is high, data is latched or shifted, ie. `trigger`
+-- must run at the double rate of the needed frequency.
+--
+-- Once both the data and the state machine is finished, `done` does
+-- high for a single `clock`.
+--
+-- The meaning of the generics `data_width`, `spi_cpol` and `spi_cpha`
+-- are explained in the parent entity. `spi_in` is MISO, `spi_out` MOSI
+-- and `spi_clock` SCK. `data_in` is the parallel input, `data_out` the
+-- output and the same constraints as described in the parent entity
+-- apply.
+--
+-- This entity might be folded into the parent entity one day.
+-----------------------------------------------------------------------
+-- This entity is part of the following library:
+-- pragma library fhw_spi
+library fhw_spi;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
------------------------------------------------------------------------
 
 entity spi_engine_e is
   generic(
