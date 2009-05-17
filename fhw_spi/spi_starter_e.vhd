@@ -25,7 +25,7 @@ begin
   begin
     if reset = '1' then
       running_s <= '0';
-    elsif falling_edge(clock) then
+    elsif rising_edge(clock) then
       if (start or stop) = '1' then
         running_s <= start and not stop;
       end if;

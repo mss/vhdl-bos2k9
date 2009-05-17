@@ -61,8 +61,7 @@ architecture rtl of spi_engine_e is
   constant start_state_c : natural := 0;
   constant latch_state_c : natural := 1;
   constant shift_state_c : natural := 2;
-  constant finis_state_c : natural := 3;
-  --TODO: clock_state_c
+  constant clock_state_c : natural := 3;
 
   signal data_s   : std_logic_vector(data_width - 1 downto 0);
   signal buffer_s : std_logic;
@@ -70,12 +69,12 @@ architecture rtl of spi_engine_e is
   
   signal spi_clock_s : std_logic;
   
+  signal shifter_done_s : std_logic;
   signal shifter_load_s : std_logic;
   signal shifter_trig_s : std_logic;
 begin
-  data_out <= data_s;
-  done     <= done_s;
-  
+  data_out  <= data_s;
+  done      <= done_s;
   spi_clock <= spi_clock_s;
   
   sequence : process(clock, reset, trigger, state_s)
@@ -85,37 +84,42 @@ begin
     elsif rising_edge(clock) then
       if (state_s(start_state_c) and trigger) = '1' then
         state_s(start_state_c) <= '0';
-        state_s(latch_state_c) <= '1';
-      end if;
-      if (state_s(latch_state_c) and trigger) = '1' then
-        state_s(latch_state_c) <= '0';
-        state_s(shift_state_c) <= '1';
-      end if;
-      if (state_s(shift_state_c) and trigger) = '1' then
-        state_s(shift_state_c) <= '0';
-        state_s(finis_state_c) <= '1';
-      end if;
-      if (state_s(finis_state_c)) = '1' then
-        state_s(finis_state_c) <= '0';
-        if done_s = '0' then
+        if spi_cpha = '0' then
           state_s(latch_state_c) <= '1';
         else
+          state_s(clock_state_c) <= '1';
+        end if;
+      end if;
+      if ((state_s(latch_state_c) or state_s(shift_state_c)) and trigger) = '1' then
+        state_s(latch_state_c) <= '0';
+        state_s(shift_state_c) <= '0';
+        state_s(clock_state_c) <= '1';
+      end if;
+      if (state_s(clock_state_c)) = '1' then
+        state_s(clock_state_c) <= '0';
+        if (shifter_done_s or done_s) = '1' then
           state_s(start_state_c) <= '1';
+        elsif spi_clock_s = (spi_cpol xor spi_cpha) then
+          state_s(shift_state_c) <= '1';
+        else
+          state_s(latch_state_c) <= '1';
         end if;
       end if;
     end if;
   end process;
   
-  clocker : process(clock, reset, trigger, state_s)
+  clocker : process(clock, reset, trigger, state_s, done_s)
   begin
     if reset = '1' then
       spi_clock_s <= spi_cpol;
     elsif rising_edge(clock) then
-      if trigger = '1' then
-        if state_s(start_state_c) = '0' then
-          spi_clock_s <= not spi_clock_s;
+      if state_s(clock_state_c) = '1' then
+        if spi_cpha = '0' then
+          if done_s = '0' then
+            spi_clock_s <= not spi_clock_s;
+          end if;
         else
-          if spi_cpha = '1' then
+          if shifter_done_s = '0' then
             spi_clock_s <= not spi_clock_s;
           end if;
         end if;
@@ -132,8 +136,27 @@ begin
     end if;
   end process;
   
-  shifter_load_s <= state_s(start_state_c) and trigger;
-  shifter_trig_s <= state_s(shift_state_c) and trigger;
+  done_sync : process(clock, reset, state_s)
+  begin
+    if reset = '1' then
+      done_s <= '0';
+    elsif rising_edge(clock) then
+      done_s <= shifter_done_s;
+    end if;
+  end process;
+  
+  shifter_sync : process(clock, reset, trigger, state_s)
+    variable done_v : std_logic;
+  begin
+    if reset = '1' then
+      shifter_load_s <= '0';
+      shifter_trig_s <= '0';
+    elsif rising_edge(clock) then
+      shifter_load_s <= state_s(start_state_c) and trigger;
+      shifter_trig_s <= state_s(shift_state_c) and trigger;
+    end if;
+  end process;
+
   shifter : spi_shifter_e port map(
     clock  => clock,
     enable => shifter_trig_s,
@@ -152,6 +175,6 @@ begin
     
     override => '0',
     
-    done => done_s);
+    done => shifter_done_s);
 
 end rtl;

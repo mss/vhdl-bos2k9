@@ -11,8 +11,11 @@ entity spi_master_t is
   generic(
     clock_interval : time := 20 us;
     clock_divider  : positive := 6;
+    spi_mode : natural := 0;
     data_width : positive := 8;
-    spi_mode : natural := 0);
+    txd_pattern : std_logic_vector(8 - 1 downto 0) := "10010110";
+    rxd_pattern : std_logic_vector(8 - 1 downto 0) := "LHLHLHLH";
+    repeat : natural := 1);
 end spi_master_t;
 
 -----------------------------------------------------------------------
@@ -24,9 +27,9 @@ architecture test of spi_master_t is
 
   component spi_master is
     generic(
-      clk_div    : positive;
-      data_width : positive;
-      spi_mode   : integer range 0 to 3);
+      clk_div    : positive := clock_divider;
+      data_width : positive := data_width;
+      spi_mode   : integer range 0 to 3 := spi_mode);
     port(
       clk : in  std_logic;
       rst : in  std_logic;
@@ -41,8 +44,6 @@ architecture test of spi_master_t is
       mosi  : out std_logic;
       sck   : out std_logic);
   end component;
-  
-  constant pattern_c : std_logic_vector(data_width - 1 downto 0) := ('1', '0', '0', '1', '0', '1', '1', '0', others => '0');
 
   signal test_s : integer;
   
@@ -58,21 +59,22 @@ architecture test of spi_master_t is
   signal sck_s   : std_logic;
   
   signal ss_n    : std_logic;
-  signal data_s  : std_logic_vector(data_width - 1 downto 0);
+  
+  signal simo_s  : std_logic_vector(data_width - 1 downto 0);
 begin
-  dut : spi_master generic map(clock_divider, data_width, spi_mode) port map(clock_s, reset_s, start_s, busy_s, txd_s, rxd_s, miso_s, mosi_s, sck_s);
+  dut : spi_master port map(clock_s, reset_s, start_s, busy_s, txd_s, rxd_s, miso_s, mosi_s, sck_s);
   
   stimulus : process
+    variable repeat_v : natural;
   begin
+    repeat_v := repeat;
     test_s <= -3;
     start_s <= '0';
     txd_s   <= (others => 'U');
-    miso_s  <= 'Z';
     wait until falling_edge(reset_s); test_s <= test_s + 1;
     
     wait until rising_edge(clock_s); test_s <= test_s + 1;
-    txd_s  <= pattern_c;
-    miso_s <= '1';
+    txd_s  <= txd_pattern;
     
     wait until rising_edge(clock_s); test_s <= test_s + 1;
     start_s <= '1';
@@ -80,36 +82,69 @@ begin
     wait until rising_edge(clock_s); test_s <= test_s + 1;
     start_s <= '0';
     
-    wait until falling_edge(busy_s); test_s <= test_s + 1;
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
     txd_s  <= (others => 'U');
-    miso_s <= 'Z';
+    
+    while repeat_v > 0 loop
+      repeat_v := repeat_v - 1;
+    
+      wait until rising_edge(clock_s); test_s <= test_s + 1;
+      txd_s  <= (others => '1');
+    
+      wait until rising_edge(clock_s); test_s <= test_s + 1;
+      txd_s  <= txd_s xor txd_pattern;
+    
+      wait until falling_edge(busy_s); test_s <= test_s + 1;
+      start_s <= '1';
+    
+      wait until rising_edge(clock_s); test_s <= test_s + 1;
+      start_s <= '0';
+    
+      wait until rising_edge(clock_s); test_s <= test_s + 1;
+      txd_s  <= (others => 'U');
+    end loop;
     
     wait;
   end process;
   
-  ss_n <= not (start_s or busy_s);
-  sample : process
+  
+  ss_n <= not busy_s;
+  
+  slave : process
     variable count_v : integer;
+    variable index_v : integer;
+    variable data_v  : std_logic_vector(data_width - 1 downto 0);
   begin
-    data_s <= (others => 'U');
-    if spi_cpha_c = '0' then
-      count_v := 0;
-    else
-      count_v := -1;
-    end if;
+    simo_s  <= (others => 'U');
+    miso_s  <= 'Z';
+    index_v := data_width - 1;
+    count_v := 0;
     wait until falling_edge(ss_n);
+    data_v := txd_s;
+    
+    miso_s  <= rxd_pattern(index_v);
+    if spi_cpha_c = '1' then
+      wait until sck_s'event;
+    end if;
     
     while ss_n = '0' loop
       wait until sck_s'event or ss_n'event;
-      if ss_n = '0' then
+      if not (index_v = -1) then
         count_v := count_v + 1;
+        -- Latch on odd edges, shift on even
         if (count_v mod 2) = 1 then
-          data_s(0) <= mosi_s;
+          simo_s(0) <= mosi_s;
+          index_v := index_v - 1;
         else
-          data_s <= data_s(data_width - 2 downto 0) & data_s(data_width - 1);
+          simo_s  <= simo_s(data_width - 2 downto 0) & simo_s(data_width - 1);
+          miso_s  <= rxd_pattern(index_v);
         end if;
       end if;
     end loop;
+    
+    assert simo_s = data_v      report "neq:txd";
+    assert rxd_s  = rxd_pattern report "neq:rxd";
+    wait until rising_edge(clock_s);
   end process;
   
   reset : process
