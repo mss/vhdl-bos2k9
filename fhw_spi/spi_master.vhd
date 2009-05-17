@@ -67,10 +67,15 @@ end spi_master;
 -----------------------------------------------------------------------
 
 architecture rtl of spi_master is
+  -- Split up the SPI mode in low and high bit.
   constant spi_mode_c : unsigned(1 downto 0) := to_unsigned(spi_mode, 2);
   constant spi_cpol_c : std_logic := spi_mode_c(1);
   constant spi_cpha_c : std_logic := spi_mode_c(0);
   
+  -- This counter generates the SPI clock/trigger and drives the state
+  -- machine. Thus it must count half the wanted SPI clock (ie. trigger
+  -- the rising and falling SPI clock edge). To avoid races, it is also
+  -- triggered on the FALLING EDGE.
   component spi_counter_e
     generic(
       count : positive := clk_div / 2;
@@ -85,6 +90,8 @@ architecture rtl of spi_master is
       done : out std_logic);
   end component;
   
+  -- This trivial entity manages the busy flag. Might be folded into
+  -- this entity one day.
   component spi_starter_e
     port(
       clock   : in  std_logic;
@@ -96,6 +103,9 @@ architecture rtl of spi_master is
       status  : out std_logic);
   end component;
   
+  -- This is the actual implementation of the SPI master. Might be
+  -- folded into this entity one day. Most generics and ports are just
+  -- handed through with the exception of the generated trigger.
   component spi_engine_e
     generic(
       data_width : positive := data_width;
@@ -116,39 +126,51 @@ architecture rtl of spi_master is
       spi_clock : out std_logic);
   end component;
 
+  -- Internal, nicer names for `clk` and `rst`.
   signal clock_s : std_logic;
   signal reset_s : std_logic;
   
+  -- Start, stop and busy flag.
   signal start_s   : std_logic;
   signal stop_s    : std_logic;
   signal running_s : std_logic;
   
+  -- The trigger who keeps us running.
   signal trigger_s : std_logic;
   
+  -- Internal names for `rxd` and `txd`.
   signal data_in_s  : std_logic_vector(data_width - 1 downto 0);
   signal data_out_s : std_logic_vector(data_width - 1 downto 0);
   
+  -- Internal names for `miso`, `mosi` and `sck`.
   signal spi_in_s    : std_logic;
   signal spi_out_s   : std_logic;
   signal spi_clock_s : std_logic;
 begin
+  -- Make sure all generics are sane.
   assert clk_div >= 6      report "clk_div can not be lower than 6" severity error;
   assert clk_div mod 2 = 0 report "clk_div will be rounded down to the next even value" severity warning;
 
+  -- These are just renamed inputs.
   clock_s <= clk;
   reset_s <= rst;
   
-  start_s <= start and not running_s; -- make sure we don't trigger a start while running
+  -- More or less also just name mappings but make sure we don't
+  -- trigger a start while running; probably not needed but doesn't
+  -- hurt.
+  start_s <= start and not running_s;
   busy    <= running_s;
   
-  -- Direct output; beware of hazards!
+  -- Input and output; direct output; beware of hazards!
   data_in_s <= txd;
   rxd <= data_out_s;
   
+  -- And even more name mappings.
   spi_in_s <= miso;
   mosi <= spi_out_s;
   sck <= spi_clock_s;
   
+  -- The wiring here is pretty obvious.
   starter : spi_starter_e port map(
     clock  => clock_s,
     reset  => reset_s,
@@ -157,7 +179,6 @@ begin
     stop    => stop_s,
     
     status  => running_s);
-    
   trigger : spi_counter_e port map(
     clock  => clock_s,
     reset  => reset_s,
@@ -166,7 +187,6 @@ begin
     override => start_s,
     
     done   => trigger_s);
-    
   engine : spi_engine_e port map(
     clock => clock_s,
     reset => reset_s,

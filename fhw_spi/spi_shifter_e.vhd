@@ -44,6 +44,7 @@ begin
   process(clock, enable)
   begin
     if rising_edge(clock) then
+      -- This could be the enable line for the FFs, `load` overrides `enable`.
       if (enable or load) = '1' then
         if load = '1' then
           data_s <= preload;

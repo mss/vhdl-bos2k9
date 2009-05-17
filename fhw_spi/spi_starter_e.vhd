@@ -38,7 +38,9 @@ begin
     if reset = '1' then
       running_s <= '0';
     elsif rising_edge(clock) then
+      -- Enable line of the status FF.
       if (start or stop) = '1' then
+        -- Input of the status FF.
         running_s <= start and not stop;
       end if;
     end if;

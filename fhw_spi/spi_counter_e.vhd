@@ -36,6 +36,7 @@ end spi_counter_e;
 -----------------------------------------------------------------------
 
 architecture rtl of spi_counter_e is
+  -- Use a subtype to please ModelSim's interpretation of attributes.
   subtype count_t is natural range 0 to count - 1;
   signal count_s : count_t;
 begin
@@ -45,7 +46,10 @@ begin
       count_s <= 0;
       done    <= '0';
     elsif clock'event and clock = edge then
+      -- `done` must be high for a single `clock` only, even if
+      -- `enable` is low.
       done <= '0';
+      -- This could become an Enable line for one of the FFs.
       if (enable or override) = '1' then
         if (count_s = count_t'high) or (override = '1') then
           count_s <= count_t'low;
