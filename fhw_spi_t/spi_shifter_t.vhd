@@ -1,5 +1,7 @@
 -----------------------------------------------------------------------
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
+--
+-- Testing the spi_shifter.
 -----------------------------------------------------------------------
 -- This entity is part of the following library:
 -- pragma library fhw_spi_t
