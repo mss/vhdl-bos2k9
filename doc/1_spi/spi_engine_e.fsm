@@ -1,0 +1,74 @@
+<?xml version='1.0'?>
+<!DOCTYPE qfsmproject SYSTEM 'qfsm.dtd'>
+<qfsmproject version="0.51" author="Qfsm" >
+  <machine nummooreout="0" transfontitalic="0" draw_it="1" statefontsize="8" transfont="Helvetica" statefontitalic="0" author="Malte S. Stretz" description="" version="" name="spi_engine_e" arrowtype="1" numbits="10" statefontweight="50" statefont="Helvetica" numin="1" transfontsize="8" transfontweight="50" type="2" numout="0" initialstate="1" >
+    <outputnames_moore></outputnames_moore>
+    <inputnames>i_0</inputnames>
+    <outputnames></outputnames>
+    <itransition ypos="31" endx="82.27027431502162" xpos="64" endy="46.15444246572665" />
+    <state pencolor="0" endstate="0" radius="40" description="" moore_outputs="" ypos="66" code="1" xpos="117" linewidth="1" >start</state>
+    <state pencolor="0" endstate="0" radius="40" description="" moore_outputs="" ypos="64" code="10" xpos="435" linewidth="1" >latch</state>
+    <state pencolor="0" endstate="0" radius="40" description="" moore_outputs="" ypos="231" code="100" xpos="437" linewidth="1" >shift</state>
+    <state pencolor="0" endstate="0" radius="40" description="" moore_outputs="" ypos="180" code="1000" xpos="271" linewidth="1" >clock</state>
+    <transition c1x="236.3313666280128" c2y="64.5047352903832" c1y="65.00947058076638" description="" straight="1" type="2" ypos="65.51420587114957" endx="395" xpos="156.9970499420192" endy="64" c2x="315.6656833140063" >
+      <from>1</from>
+      <to>10</to>
+      <inputs default="0" any="0" invert="0" >trigger AND NOT cpha</inputs>
+      <outputs></outputs>
+    </transition>
+    <transition c1x="141.6468307958513" c2y="116.3630751085323" c1y="136.330994562353" description="" straight="0" type="2" ypos="105.9964918435295" endx="232.9510872420495" xpos="116.4702451411453" endy="167.6598120785025" c2x="214.5903956669471" >
+      <from>1</from>
+      <to>1000</to>
+      <inputs default="0" any="0" invert="0" >trigger AND cpha</inputs>
+      <outputs></outputs>
+    </transition>
+    <transition c1x="158.957285500682" c2y="66.97502427070391" c1y="-46.42591424317732" description="" straight="1" type="2" ypos="33.42141681893154" endx="155.719875926632" xpos="140.2085311451243" endy="55.96151364865095" c2x="236.9960387999184" >
+      <from>1</from>
+      <to>1</to>
+      <inputs default="0" any="0" invert="0" >NOT trigger</inputs>
+      <outputs></outputs>
+    </transition>
+    <transition c1x="347.2393294088287" c2y="104.5752573229535" c1y="86.06266928300305" description="" straight="0" type="2" ypos="86.18800784900917" endx="285.2854986506637" xpos="401.7179882264862" endy="142.6379266059566" c2x="282.046169241835" >
+      <from>10</from>
+      <to>1000</to>
+      <inputs default="0" any="0" invert="0" >trigger</inputs>
+      <outputs></outputs>
+    </transition>
+    <transition c1x="482.7609625983678" c2y="71.22905200783046" c1y="-46.08583220231982" description="" straight="1" type="2" ypos="32.67556610006825" endx="474.1905324065758" xpos="459.8752857440635" endy="55.99361694089463" c2x="554.7820554468326" >
+      <from>10</from>
+      <to>10</to>
+      <inputs default="0" any="0" invert="0" >NOT trigger</inputs>
+      <outputs></outputs>
+    </transition>
+    <transition c1x="353.4701082722135" c2y="266.6896805321192" c1y="258.6451207500998" description="" straight="0" type="2" ypos="244.5145901442706" endx="301.5716593403157" xpos="399.3522131695317" endy="205.7948375683913" c2x="310.1274340566263" >
+      <from>100</from>
+      <to>1000</to>
+      <inputs default="0" any="0" invert="0" >trigger</inputs>
+      <outputs></outputs>
+    </transition>
+    <transition c1x="548.9014299147422" c2y="321.3309219591813" c1y="187.663295198688" description="" straight="1" type="2" ypos="226.7007262807963" endx="470.2277912412063" xpos="476.7682819026339" endy="253.2691241235665" c2x="515.9957248083989" >
+      <from>100</from>
+      <to>100</to>
+      <inputs default="0" any="0" invert="0" >NOT trigger</inputs>
+      <outputs></outputs>
+    </transition>
+    <transition c1x="155.9563957812685" c2y="180.6075032509812" c1y="241.5178966827126" description="" straight="0" type="2" ypos="205.428290114444" endx="103.6236061931694" xpos="240.122790575318" endy="103.6971098192499" c2x="74.79000098721895" >
+      <from>1000</from>
+      <to>1</to>
+      <inputs default="0" any="0" invert="0" >done</inputs>
+      <outputs></outputs>
+    </transition>
+    <transition c1x="355.3316840945826" c2y="142.8962734691413" c1y="156.8425116399402" description="" straight="0" type="2" ypos="164.0165831794429" endx="437.2188007849009" xpos="307.667838588337" endy="103.9384141282165" c2x="454.906537781105" >
+      <from>1000</from>
+      <to>10</to>
+      <inputs default="0" any="0" invert="0" >sck = cpol XOR cpha</inputs>
+      <outputs></outputs>
+    </transition>
+    <transition c1x="334.4892158554429" c2y="160.7240384637675" c1y="151.2529601484669" description="" straight="0" type="2" ypos="165.5021495538021" endx="467.3107520941362" xpos="308.2801868616518" endy="204.8990745856049" c2x="475.5010841705714" >
+      <from>1000</from>
+      <to>100</to>
+      <inputs default="0" any="0" invert="0" >sck = NOT cpol XOR cpha</inputs>
+      <outputs></outputs>
+    </transition>
+  </machine>
+</qfsmproject>
