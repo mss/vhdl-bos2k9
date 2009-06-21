@@ -53,4 +53,5 @@ set_global_assignment -name VHDL_FILE fhw_spi/spi_counter_e.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE fhw_spi/spi_engine_e.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE fhw_spi/spi_starter_e.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE fhw_spi/spi_master.vhd -library fhw_spi
+set_global_assignment -name VHDL_FILE bos2k9_globals.vhd
 set_global_assignment -name VHDL_FILE bos2k9.vhd
