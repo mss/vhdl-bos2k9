@@ -1,11 +1,12 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library fhw_spi;
-use fhw_spi.all;
+library fhw_sd;
+use fhw_sd.sd_host;
 
 library fhw_tools;
 use fhw_tools.all;
+use fhw_tools.types.all;
 
 use work.bos2k9_globals.all;
 
@@ -32,24 +33,28 @@ end bos2k9;
 
 architecture board of bos2k9 is
 
-  component spi_master 
+  component sd_host is
     generic(
-      clk_div    : positive := clock_div_c;
-      data_width : positive := std_logic_byte_t'length);
+      clock_interval : time     := clock_interval_c;
+      clk_div        : positive := sd_clock_div_c;
+      max_blocks     : positive := sd_max_blocks_c);
     port(
       clk : in  std_logic;
       rst : in  std_logic;
-    
-      start : in  std_logic;
+
+      ready : out std_logic;
       busy  : out std_logic;
-    
-      txd   : in  std_logic_byte_t;
-      rxd   : out std_logic_byte_t;
-    
+      
+      address : sd_address_t;
+      start   : in  std_logic;
+      rxd     : out std_logic_byte_t;
+      shd     : out std_logic;
+      
       miso  : in  std_logic;
       mosi  : out std_logic;
-      sck   : out std_logic);
-  end component;
+      sck   : out std_logic;
+      cs    : out std_logic);
+   end component;
   
   component button
     port(
@@ -57,34 +62,36 @@ architecture board of bos2k9 is
       output : out std_ulogic);
   end component;
 
-  signal start_s : std_logic;
-  signal busy_s  : std_logic;
-  
-  signal ibuf_s  : std_logic_byte_t;
-  signal obuf_s  : std_logic_byte_t;
+  signal sd_ready_s   : std_logic;
+  signal sd_busy_s    : std_logic;
+  signal sd_address_s : sd_address_t;
+  signal sd_start_s   : std_logic;
+  signal sd_data_s    : std_logic_byte_t;
+  signal sd_next_s    : std_logic;
   
 begin
-  spi_cs <= not busy_s;
-  busy_led <= busy_s;
+  busy_led <= sd_busy_s;
+  byte_led <= sd_data_s;
   
-  obuf_s <= byte_swc;
-  byte_led <= ibuf_s;
+  --TODO: sd_address_s <= byte_swc;
   
-  spi_io : spi_master port map(
+  sd_io : sd_host port map(
     clk => clk,
     rst => rst,
     
-    start => start_s,
-    busy  => busy_s,
-    
-    txd   => obuf_s,
-    rxd   => ibuf_s,
+    ready   => sd_ready_s,
+    busy    => sd_busy_s,
+    address => sd_address_s,
+    start   => sd_start_s,
+    rxd     => sd_data_s,
+    shd     => sd_next_s,
     
     miso  => spi_miso,
     mosi  => spi_mosi,
-    sck   => spi_sck);
+    sck   => spi_sck,
+    cs    => spi_cs);
   
   start_button : button port map(
     input  => start_btn,
-    output => start_s);
+    output => sd_start_s);
 end board;
