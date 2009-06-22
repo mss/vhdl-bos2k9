@@ -21,9 +21,9 @@ use ieee.numeric_std.all;
 
 entity sd_host is
   generic(
-    clock_interval : time;
-    clk_div        : positive; -- TODO: calculate this based on clock_interval
-    max_blocks     : integer range 1 to 4096 := 4096);
+    clock_interval      : time;
+    clock_divider       : positive; -- TODO: calculate this based on clock_interval
+    block_address_width : integer range 1 to 12 := 12); -- No SDHC, so max is 4096 blocks a 512 byte
   port(
     clk : in  std_logic;
     rst : in  std_logic;
@@ -31,7 +31,7 @@ entity sd_host is
     ready : out std_logic;
     busy  : out std_logic;
     
-    address : integer range 0 to max_blocks - 1;
+    address : std_logic_vector(block_address_width - 1 downto 0);
     start   : in  std_logic;
     rxd     : out std_logic_byte_t;
     shd     : out std_logic;
@@ -47,7 +47,7 @@ entity sd_host is
 architecture rtl of sd_host is
   component spi_master 
     generic(
-      clk_div    : positive := clk_div;
+      clk_div    : positive := clock_divider;
       data_width : positive := std_logic_byte_t'length);
     port(
       clk : in  std_logic;

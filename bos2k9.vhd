@@ -20,7 +20,8 @@ entity bos2k9 is
     start_btn : in  std_logic;
     busy_led  : out std_logic;
     
-    byte_swc : in  std_logic_byte_t;
+    byte_sw1 : in  std_logic_byte_t;
+    byte_sw2 : in  std_logic_byte_t;
     byte_led : out std_logic_byte_t;
     
     spi_miso : in  std_logic;  --PIN_AD24
@@ -35,9 +36,9 @@ architecture board of bos2k9 is
 
   component sd_host is
     generic(
-      clock_interval : time     := clock_interval_c;
-      clk_div        : positive := sd_clock_div_c;
-      max_blocks     : positive := sd_max_blocks_c);
+      clock_interval      : time     := clock_interval_c;
+      clock_divider       : positive := sd_clock_div_c;
+      block_address_width : positive := sd_block_address_width_c);
     port(
       clk : in  std_logic;
       rst : in  std_logic;
@@ -45,7 +46,7 @@ architecture board of bos2k9 is
       ready : out std_logic;
       busy  : out std_logic;
       
-      address : sd_address_t;
+      address : std_logic_block_address_t;
       start   : in  std_logic;
       rxd     : out std_logic_byte_t;
       shd     : out std_logic;
@@ -54,7 +55,20 @@ architecture board of bos2k9 is
       mosi  : out std_logic;
       sck   : out std_logic;
       cs    : out std_logic);
-   end component;
+  end component;
+  
+  component bos2k9_mmu is
+    port(
+      clock : in  std_logic;
+      reset : in  std_logic;
+    
+      write_next : in  std_logic;
+      write_addr : out std_logic_byte_address_t;
+      write_data : in  std_logic_byte_t;
+    
+      read_addr : in  std_logic_byte_address_t;
+      read_data : out std_logic_byte_t);
+  end component;
   
   component button
     port(
@@ -64,16 +78,20 @@ architecture board of bos2k9 is
 
   signal sd_ready_s   : std_logic;
   signal sd_busy_s    : std_logic;
-  signal sd_address_s : sd_address_t;
+  signal sd_address_s : std_logic_block_address_t;
   signal sd_start_s   : std_logic;
   signal sd_data_s    : std_logic_byte_t;
-  signal sd_next_s    : std_logic;
+  signal sd_latch_s   : std_logic;
+  signal sd_shift_s   : std_logic;
+  
+  signal bl_address_s : std_logic_byte_address_t;
+  
   
 begin
   busy_led <= sd_busy_s;
-  byte_led <= sd_data_s;
   
-  --TODO: sd_address_s <= byte_swc;
+  sd_address_s <= byte_sw1(sd_block_address_width_c - 1 downto 0);
+  bl_address_s <= '0' & byte_sw2;
   
   sd_io : sd_host port map(
     clk => clk,
@@ -84,12 +102,20 @@ begin
     address => sd_address_s,
     start   => sd_start_s,
     rxd     => sd_data_s,
-    shd     => sd_next_s,
+    shd     => sd_latch_s,
     
     miso  => spi_miso,
     mosi  => spi_mosi,
     sck   => spi_sck,
     cs    => spi_cs);
+  mmu : bos2k9_mmu port map(
+    clock => clk,
+    reset => rst,
+    write_next => sd_latch_s,
+    write_addr => open,
+    write_data => sd_data_s,
+    read_addr  => bl_address_s,
+    read_data  => byte_led);
   
   start_button : button port map(
     input  => start_btn,
