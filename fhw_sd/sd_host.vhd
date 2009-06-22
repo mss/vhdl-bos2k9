@@ -24,7 +24,7 @@ entity sd_host is
   generic(
     clock_interval      : time;
     clock_divider       : positive; -- TODO: calculate this based on clock_interval
-    block_address_width : integer range 1 to 12 := 12); -- No SDHC, so max is 4096 blocks a 512 byte
+    block_address_width : block_address_width_t := 12); -- No SDHC, so max is 4096 blocks a 512 byte
   port(
     clk : in  std_logic;
     rst : in  std_logic;
@@ -32,7 +32,7 @@ entity sd_host is
     ready : out std_logic;
     busy  : out std_logic;
     
-    address : std_logic_vector(block_address_width - 1 downto 0);
+    address : in  std_logic_vector(block_address_width - 1 downto 0);
     start   : in  std_logic;
     rxd     : out std_logic_byte_t;
     shd     : out std_logic;
@@ -48,11 +48,15 @@ entity sd_host is
 architecture rtl of sd_host is
   
   component sd_manager_e is
+    generic(
+      block_address_width : block_address_width_t := block_address_width);
     port(
       clock : in std_logic;
       reset : in std_logic;
     
-      start : in  std_logic;
+      address : in std_logic_vector(block_address_width - 1 downto 0);
+      start   : in std_logic;
+      
       ready : out std_logic;
       busy  : out std_logic;
     
@@ -117,7 +121,9 @@ begin
     clock => clk,
     reset => rst,
     
-    start => start,
+    address => address,
+    start   => start,
+    
     ready => ready,
     busy  => busy,
     

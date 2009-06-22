@@ -46,7 +46,7 @@ architecture board of bos2k9 is
       ready : out std_logic;
       busy  : out std_logic;
       
-      address : std_logic_block_address_t;
+      address : in  std_logic_block_address_t;
       start   : in  std_logic;
       rxd     : out std_logic_byte_t;
       shd     : out std_logic;

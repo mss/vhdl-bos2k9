@@ -20,11 +20,15 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity sd_manager_e is
+  generic(
+    block_address_width : block_address_width_t);
   port(
     clock : in std_logic;
     reset : in std_logic;
     
-    start : in  std_logic;
+    address : in std_logic_vector(block_address_width - 1 downto 0);
+    start   : in std_logic;
+    
     ready : out std_logic;
     busy  : out std_logic;
     

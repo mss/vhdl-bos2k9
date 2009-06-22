@@ -13,6 +13,8 @@ use ieee.std_logic_1164.all;
 
 package sd_types is
 
+  subtype  block_address_width_t is integer range 1 to 12;
+
   subtype  std_logic_cmd_t is std_logic_vector(5 downto 0);
   subtype  std_logic_arg_t is std_logic_vector(31 downto 0);
   subtype  std_logic_rsp_t is std_logic_vector(6 downto 0);
