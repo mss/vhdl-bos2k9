@@ -75,6 +75,8 @@ begin
   stimulus : process
     variable repeat_v : natural;
   begin
+    wait for clock_interval / 4;
+  
     repeat_v := repeat;
     test_s <= -3;
     start_s <= '0';
@@ -89,6 +91,9 @@ begin
     
     wait until rising_edge(clock_s); test_s <= test_s + 1;
     
+    -- input pattern needs to be stable for two clock cycles or we get 
+    -- a hold violation in timing analysis
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
     wait until rising_edge(clock_s); test_s <= test_s + 1;
     txd_s  <= (others => 'U');
     
@@ -128,6 +133,8 @@ begin
     variable index_v : integer;
     variable data_v  : std_logic_vector(data_width - 1 downto 0);
   begin
+    wait for clock_interval / 4;
+  
     simo_s  <= (others => 'U');
     miso_s  <= 'Z';
     index_v := data_width - 1;

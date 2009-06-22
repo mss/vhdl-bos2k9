@@ -27,7 +27,7 @@
 -- and the reset line `rst` is high active.
 -- 
 -- It is idle until `start` goes high. Data to be transmitted over SPI
--- must be stable on `txd` at that point and be held stable for one
+-- must be stable on `txd` at that point and be held stable for two
 -- `clk` cycle afterwards. Then, next data can be prepared.
 
 -- While data is shifted, the `busy` line is high and `start` is

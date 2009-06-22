@@ -14,6 +14,7 @@ use ieee.numeric_std.all;
 
 entity bos2k9_t is
   generic(
+    clock_interval : time := clock_interval_c;
     clock_divider  : positive := 6;
     txd_pattern : std_logic_byte_t := "10010110";
     rxd_pattern : std_logic_byte_t := "LHLHLHLH";
@@ -74,6 +75,8 @@ begin
   stimulus : process
     variable repeat_v : natural;
   begin
+    wait for clock_interval / 4;
+  
     repeat_v := repeat;
     test_s <= -3;
     start_n <= '1';
@@ -88,6 +91,7 @@ begin
     
     wait until rising_edge(clock_s); test_s <= test_s + 1;
     
+    wait until rising_edge(clock_s); test_s <= test_s + 1;
     wait until rising_edge(clock_s); test_s <= test_s + 1;
     txd_s  <= (others => 'U');
     
@@ -126,6 +130,8 @@ begin
     variable index_v : integer;
     variable data_v  : std_logic_byte_t;
   begin
+    wait for clock_interval / 4;
+  
     simo_s  <= (others => 'U');
     miso_s  <= 'Z';
     index_v := 7;
@@ -166,9 +172,9 @@ begin
   clock : process
   begin
     clock_s <= '0';
-    wait for clock_interval_c / 2;
+    wait for clock_interval / 2;
     clock_s <= '1';
-    wait for clock_interval_c / 2;
+    wait for clock_interval / 2;
   end process;
   
 end test;
