@@ -64,7 +64,6 @@ set_global_assignment -name VHDL_FILE fhw_spi/spi_starter_e.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE fhw_spi/spi_master.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE fhw_tools/button.vhd -library fhw_tools
 set_global_assignment -name VHDL_FILE bos2k9_globals.vhd
-set_global_assignment -name VHDL_FILE bos2k9.vhd
 set_location_assignment PIN_Y21 -to spi_mosi
 set_location_assignment PIN_AD24 -to spi_miso
 set_location_assignment PIN_AD25 -to spi_sck
@@ -89,3 +88,8 @@ set_location_assignment PIN_AC13 -to byte_swc[6]
 set_location_assignment PIN_C13 -to byte_swc[7]
 set_global_assignment -name RESERVE_ASDO_AFTER_CONFIGURATION "AS INPUT TRI-STATED"
 set_global_assignment -name RESERVE_ALL_UNUSED_PINS_NO_OUTPUT_GND "AS INPUT TRI-STATED"
+set_global_assignment -name VHDL_FILE bos2k9.vhd
+set_global_assignment -name ASSIGNMENT_GROUP_MEMBER spi_miso -section_id spi
+set_global_assignment -name ASSIGNMENT_GROUP_MEMBER spi_mosi -section_id spi
+set_global_assignment -name ASSIGNMENT_GROUP_MEMBER spi_sck -section_id spi
+set_global_assignment -name ASSIGNMENT_GROUP_MEMBER spi_cs -section_id spi
