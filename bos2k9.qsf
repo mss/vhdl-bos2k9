@@ -76,18 +76,6 @@ set_global_assignment -name ASSIGNMENT_GROUP_MEMBER spi_miso -section_id spi
 set_global_assignment -name ASSIGNMENT_GROUP_MEMBER spi_mosi -section_id spi
 set_global_assignment -name ASSIGNMENT_GROUP_MEMBER spi_sck -section_id spi
 set_global_assignment -name ASSIGNMENT_GROUP_MEMBER spi_cs -section_id spi
-set_global_assignment -name VHDL_FILE fhw_tools/types.vhd -library fhw_tools
-set_global_assignment -name VHDL_FILE fhw_sd/sd_host.vhd -library fhw_sd
-set_global_assignment -name VHDL_FILE fhw_spi/spi_shifter_e.vhd -library fhw_spi
-set_global_assignment -name VHDL_FILE fhw_spi/spi_counter_e.vhd -library fhw_spi
-set_global_assignment -name VHDL_FILE fhw_spi/spi_engine_e.vhd -library fhw_spi
-set_global_assignment -name VHDL_FILE fhw_spi/spi_starter_e.vhd -library fhw_spi
-set_global_assignment -name VHDL_FILE fhw_spi/spi_master.vhd -library fhw_spi
-set_global_assignment -name VHDL_FILE fhw_tools/button.vhd -library fhw_tools
-set_global_assignment -name VHDL_FILE bos2k9_globals.vhd
-set_global_assignment -name VHDL_FILE bos2k9_mmu.vhd
-set_global_assignment -name QIP_FILE mf_block_ram.qip
-set_global_assignment -name VHDL_FILE bos2k9.vhd
 set_location_assignment PIN_N25 -to byte_sw1[0]
 set_location_assignment PIN_N26 -to byte_sw1[1]
 set_location_assignment PIN_P25 -to byte_sw1[2]
@@ -104,3 +92,18 @@ set_location_assignment PIN_P1 -to byte_sw2[3]
 set_location_assignment PIN_N1 -to byte_sw2[2]
 set_location_assignment PIN_A13 -to byte_sw2[1]
 set_location_assignment PIN_B13 -to byte_sw2[0]
+set_global_assignment -name VHDL_FILE fhw_sd/sd_host.vhd -library fhw_sd
+set_global_assignment -name VHDL_FILE fhw_sd/sd_manager_e.vhd -library fhw_sd
+set_global_assignment -name VHDL_FILE fhw_sd/sd_io_e.vhd -library fhw_sd
+set_global_assignment -name VHDL_FILE fhw_sd/sd_types.vhd -library fhw_sd
+set_global_assignment -name VHDL_FILE fhw_spi/spi_master.vhd -library fhw_spi
+set_global_assignment -name VHDL_FILE fhw_spi/spi_engine_e.vhd -library fhw_spi
+set_global_assignment -name VHDL_FILE fhw_spi/spi_shifter_e.vhd -library fhw_spi
+set_global_assignment -name VHDL_FILE fhw_spi/spi_counter_e.vhd -library fhw_spi
+set_global_assignment -name VHDL_FILE fhw_spi/spi_starter_e.vhd -library fhw_spi
+set_global_assignment -name VHDL_FILE fhw_tools/types.vhd -library fhw_tools
+set_global_assignment -name VHDL_FILE fhw_tools/button.vhd -library fhw_tools
+set_global_assignment -name VHDL_FILE bos2k9_globals.vhd
+set_global_assignment -name VHDL_FILE bos2k9_mmu.vhd
+set_global_assignment -name QIP_FILE mf_block_ram.qip
+set_global_assignment -name VHDL_FILE bos2k9.vhd
