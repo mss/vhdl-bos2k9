@@ -7,7 +7,7 @@
 -- This entity is part of the following library:
 -- pragma library fhw_sd
 library fhw_sd;
-use fhw_sd.sd_types.all;
+use fhw_sd.sd_globals.all;
 
 library fhw_spi;
 use fhw_spi.spi_master;
@@ -66,20 +66,20 @@ begin
     prev_state_s <= curr_state_s;
     case curr_state_s is
       when rset_state_c =>
-        command  <= to_cmd(63);
-        argument <= to_arg(50); -- 1+ ms: 8 SCK (1 byte) @ 400 kHz = 2.5 us * 8 = 20 us
+        command  <= cmd_do_reset_c;
+        argument <= arg_do_reset_c;
       when strt_state_c =>
-        command  <= to_cmd(62);
-        argument <= to_arg(10); -- 75+ SCKs (10 byte)
+        command  <= cmd_do_idle_c;
+        argument <= arg_do_idle_c;
       when init_state_c =>
-        command  <= to_cmd(0);
-        argument <= to_arg(0);
+        command  <= cmd_go_idle_state_c;
+        argument <= arg_go_idle_state_c;
       when bsiz_state_c =>
-        command  <= to_cmd(16);
-        argument <= to_arg(512);
+        command  <= cmd_set_blocklen_c;
+        argument <= arg_set_blocklen_c;
       when read_state_c =>
-        command  <= to_cmd(17);
-        argument <= to_arg(to_integer(unsigned(address & "000000000")));
+        command  <= cmd_read_single_block_c;
+        argument <= to_arg(to_integer(unsigned(address & pad_read_single_block_c)));
       when others =>
         prev_state_s <= prev_state_s;
     end case;

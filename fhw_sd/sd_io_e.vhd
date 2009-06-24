@@ -7,7 +7,7 @@
 -- This entity is part of the following library:
 -- pragma library fhw_sd
 library fhw_sd;
-use fhw_sd.sd_types.all;
+use fhw_sd.sd_globals.all;
 
 library fhw_spi;
 use fhw_spi.spi_master;
@@ -42,4 +42,23 @@ end sd_io_e;
 
 architecture rtl of sd_io_e is
 begin
+  process(clock, reset)
+  begin
+    spi_start <= '0';
+    if reset = '1' then
+    elsif rising_edge(clock) then
+      case command is
+        when cmd_do_reset_c =>
+          spi_txd <= (others => '1');
+        when cmd_do_idle_c =>
+          null;
+        when cmd_set_blocklen_c =>
+          null;
+        when cmd_read_single_block_c =>
+          null;
+        when others =>
+          null;
+      end case;
+    end if;
+  end process;
 end rtl;
