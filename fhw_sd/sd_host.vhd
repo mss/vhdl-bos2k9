@@ -31,6 +31,7 @@ entity sd_host is
 
     ready : out std_logic;
     busy  : out std_logic;
+    error : out std_logic;
     
     address : in  std_logic_vector(block_address_width - 1 downto 0);
     start   : in  std_logic;
@@ -59,6 +60,7 @@ architecture rtl of sd_host is
       
       ready : out std_logic;
       busy  : out std_logic;
+      error : out std_logic;
     
       command  : out std_logic_cmd_t;
       argument : out std_logic_arg_t;
@@ -126,6 +128,7 @@ begin
     
     ready => ready,
     busy  => busy,
+    error => error,
     
     command  => sd_command_s,
     argument => sd_argument_s,

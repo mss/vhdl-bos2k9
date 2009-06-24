@@ -31,6 +31,7 @@ entity sd_manager_e is
     
     ready : out std_logic;
     busy  : out std_logic;
+    error : out std_logic;
     
     command  : out std_logic_cmd_t;
     argument : out std_logic_arg_t;
@@ -42,44 +43,111 @@ end sd_manager_e;
 
 architecture rtl of sd_manager_e is
   
-  type states_t is (
+  type state_t is (
     rset_state_c,
+    strt_state_c,
     init_state_c,
-    idle_state_c,
-    read_state_c);
-  signal curr_s : state_t;
-  signal next_s : state_t;
+    bsiz_state_c,
+    read_state_c,
+    send_state_c,
+    shft_state_c,
+    vrfy_state_c,
+    idle_state_c);
+  signal curr_state_s : state_t;
+  signal prev_state_s : state_t;
+  signal next_state_s : state_t;
   
   signal error_s : std_logic;
 
 begin
   
-  sequence : process(clock, reset, curr_s, next_s)
+  output : process(curr_state_s, address)
   begin
-    if error = '1' then
-      next_s <= rset_state_c;
-    else
-      if curr_s = 
-    end if;
-    
-    case curr_s is
+    prev_state_s <= curr_state_s;
+    case curr_state_s is
       when rset_state_c =>
-        next_s <= 
+        command  <= to_cmd(63);
+        argument <= to_arg(0);
+      when strt_state_c =>
+        command  <= to_cmd(62);
+        argument <= to_arg(0);
+      when init_state_c =>
+        command  <= to_cmd(0);
+        argument <= to_arg(0);
+      when bsiz_state_c =>
+        command  <= to_cmd(16);
+        argument <= to_arg(512);
+      when read_state_c =>
+        command  <= to_cmd(17);
+        argument <= to_arg(to_integer(unsigned(address & "000000000")));
+      when others =>
+        prev_state_s <= prev_state_s;
     end case;
-  end;
+  end process;
   
-  output : process(clock, reset, curr_s, next_s)
-  begin
-    
-  end;
+  -- verify : process(clock, reset, curr_state_s)
+  -- begin
+    -- if reset = '1' then
+      -- error_s <= '0';
+    -- elsif rising_edge(clock) then
+      -- case curr_state_s is
+        -- when shft_state_c =>
+          -- if shifting = '0' then
+            -- next_state_s <= vrfy_state_c;
+          -- end if;
+        -- when vrfy_state_c then
+          -- if response = "00000000" then
+            -- error_s <= '0';
+          -- end if;
+      -- end case;
+    -- end if;
+  -- end;
   
-  transition : process(clock, reset, curr_s, next_s)
+  sequence : process(clock, reset, next_state_s)
   begin
     if reset = '1' then
-      curr_s <= reset_state_c;
+      curr_state_s <= rset_state_c;
     elsif rising_edge(clock) then
-      curr_s <= next_s;
+      case curr_state_s is
+        when rset_state_c => curr_state_s <= strt_state_c;
+        when strt_state_c => curr_state_s <= send_state_c;
+        when init_state_c => curr_state_s <= send_state_c;
+        when bsiz_state_c => curr_state_s <= send_state_c;
+        when read_state_c => curr_state_s <= send_state_c;
+        when send_state_c => curr_state_s <= shft_state_c;
+        when shft_state_c => curr_state_s <= next_state_s;
+        when vrfy_state_c => curr_state_s <= next_state_s;
+        when idle_state_c => curr_state_s <= next_state_s;
+      end case;
     end if;
-  end;
+  end process;
+  
+  -- sequence : process(clock, reset, curr_s, next_s)
+  -- begin
+    -- if error = '1' then
+      -- next_s <= rset_state_c;
+    -- else
+      -- if curr_s = 
+    -- end if;
+    
+    -- case curr_s is
+      -- when rset_state_c =>
+        -- next_s <= 
+    -- end case;
+  -- end;
+  
+  -- output : process(clock, reset, curr_s, next_s)
+  -- begin
+    
+  -- end;
+  
+  -- transition : process(clock, reset, curr_s, next_s)
+  -- begin
+    -- if reset = '1' then
+      -- curr_s <= reset_state_c;
+    -- elsif rising_edge(clock) then
+      -- curr_s <= next_s;
+    -- end if;
+  -- end;
   
 end rtl;
