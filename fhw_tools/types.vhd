@@ -14,5 +14,12 @@ use ieee.std_logic_1164.all;
 package types is
 
   subtype std_logic_byte_t is std_logic_vector(7 downto 0);
+  
+  type spi_bus_t is record
+    miso : std_logic;
+    mosi : std_logic;
+    sck  : std_logic;
+    cs   : std_logic;
+  end record;
 
 end types;
