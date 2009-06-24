@@ -41,5 +41,45 @@ end sd_manager_e;
 -----------------------------------------------------------------------
 
 architecture rtl of sd_manager_e is
+  
+  type states_t is (
+    rset_state_c,
+    init_state_c,
+    idle_state_c,
+    read_state_c);
+  signal curr_s : state_t;
+  signal next_s : state_t;
+  
+  signal error_s : std_logic;
+
 begin
+  
+  sequence : process(clock, reset, curr_s, next_s)
+  begin
+    if error = '1' then
+      next_s <= rset_state_c;
+    else
+      if curr_s = 
+    end if;
+    
+    case curr_s is
+      when rset_state_c =>
+        next_s <= 
+    end case;
+  end;
+  
+  output : process(clock, reset, curr_s, next_s)
+  begin
+    
+  end;
+  
+  transition : process(clock, reset, curr_s, next_s)
+  begin
+    if reset = '1' then
+      curr_s <= reset_state_c;
+    elsif rising_edge(clock) then
+      curr_s <= next_s;
+    end if;
+  end;
+  
 end rtl;
