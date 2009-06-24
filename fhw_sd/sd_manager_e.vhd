@@ -67,10 +67,10 @@ begin
     case curr_state_s is
       when rset_state_c =>
         command  <= to_cmd(63);
-        argument <= to_arg(0);
+        argument <= to_arg(50); -- 1+ ms: 8 SCK (1 byte) @ 400 kHz = 2.5 us * 8 = 20 us
       when strt_state_c =>
         command  <= to_cmd(62);
-        argument <= to_arg(0);
+        argument <= to_arg(10); -- 75+ SCKs (10 byte)
       when init_state_c =>
         command  <= to_cmd(0);
         argument <= to_arg(0);
