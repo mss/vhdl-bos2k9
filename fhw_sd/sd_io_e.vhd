@@ -41,21 +41,31 @@ end sd_io_e;
 -----------------------------------------------------------------------
 
 architecture rtl of sd_io_e is
+  signal frame_s : std_logic_frame_t;
+
+  --signal counter_s : 
 begin
   process(clock, reset)
   begin
-    spi_start <= '0';
     if reset = '1' then
+      spi_start <= '0';
+      frame_s   <= (others => '0');
     elsif rising_edge(clock) then
+    
+      spi_start <= '0';
+      
+      frame_s <= create_frame(command, argument);
+    
       case command is
         when cmd_do_reset_c =>
           spi_txd <= (others => '1');
-        when cmd_do_idle_c =>
+          
+        when cmd_do_start_c =>
           null;
         when cmd_set_blocklen_c =>
           null;
         when cmd_read_single_block_c =>
-          null;
+          
         when others =>
           null;
       end case;

@@ -24,7 +24,7 @@ entity bos2k9 is
     LEDG : out std_logic_vector(8 downto 0);
     
     SD_DAT  : in  std_logic;
-    SD_DAT3 : out std_logic; --CS
+    SD_DAT3 : out std_logic;
     SD_CMD  : out std_logic;
     SD_CLK  : out std_logic);
 end bos2k9;
@@ -35,9 +35,8 @@ architecture board of bos2k9 is
 
   component sd_host is
     generic(
-      clock_interval      : time     := clock_interval_c;
-      clock_divider       : positive := sd_clock_div_c;
-      block_address_width : positive := sd_block_address_width_c);
+      clock_interval : time     := clock_interval_c;
+      clock_divider  : positive := sd_clock_div_c);
     port(
       clk : in  std_logic;
       rst : in  std_logic;
@@ -146,8 +145,8 @@ begin
     
     sd_start_s <= start_btn_s;
   
-    sd_address_s <= byte_sw1_s(sd_block_address_width_c - 1 downto 0);
-    bl_address_s <= '0' & byte_sw2_s;
+    sd_address_s <= zero_block_address_c or byte_sw1_s;
+    bl_address_s <= zero_byte_address_c  or byte_sw2_s;
   
     sd_io : sd_host port map(
       clk => clock_s,

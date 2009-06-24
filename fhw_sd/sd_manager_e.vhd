@@ -20,13 +20,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity sd_manager_e is
-  generic(
-    block_address_width : block_address_width_t);
   port(
     clock : in std_logic;
     reset : in std_logic;
     
-    address : in std_logic_vector(block_address_width - 1 downto 0);
+    address : in std_logic_block_address_t;
     start   : in std_logic;
     
     ready : out std_logic;
@@ -35,8 +33,9 @@ entity sd_manager_e is
     
     command  : out std_logic_cmd_t;
     argument : out std_logic_arg_t;
-    response : in  std_logic_rsp_t;
-    shifting : in  std_logic);
+    --trigger  : out std_logic;
+    shifting : in  std_logic;
+    response : in  std_logic_rsp_t);
 end sd_manager_e;
 
 -----------------------------------------------------------------------
@@ -61,28 +60,50 @@ architecture rtl of sd_manager_e is
 
 begin
   
-  output : process(curr_state_s, address)
+  sequence : process(clock, reset)
   begin
-    prev_state_s <= curr_state_s;
-    case curr_state_s is
-      when rset_state_c =>
-        command  <= cmd_do_reset_c;
-        argument <= arg_do_reset_c;
-      when strt_state_c =>
-        command  <= cmd_do_idle_c;
-        argument <= arg_do_idle_c;
-      when init_state_c =>
-        command  <= cmd_go_idle_state_c;
-        argument <= arg_go_idle_state_c;
-      when bsiz_state_c =>
-        command  <= cmd_set_blocklen_c;
-        argument <= arg_set_blocklen_c;
-      when read_state_c =>
-        command  <= cmd_read_single_block_c;
-        argument <= to_arg(to_integer(unsigned(address & pad_read_single_block_c)));
-      when others =>
-        prev_state_s <= prev_state_s;
-    end case;
+    if reset = '1' then
+      curr_state_s <= rset_state_c;
+    elsif rising_edge(clock) then
+      case curr_state_s is
+        when rset_state_c => curr_state_s <= strt_state_c;
+        when strt_state_c => curr_state_s <= send_state_c;
+        when init_state_c => curr_state_s <= send_state_c;
+        when bsiz_state_c => curr_state_s <= send_state_c;
+        when read_state_c => curr_state_s <= send_state_c;
+        when send_state_c => curr_state_s <= shft_state_c;
+        when shft_state_c => curr_state_s <= next_state_s;
+        when vrfy_state_c => curr_state_s <= next_state_s;
+        when idle_state_c => curr_state_s <= next_state_s;
+      end case;
+    end if;
+  end process;
+  
+  output : process(clock, reset)
+    variable address_v : std_logic_arg_t;
+  begin
+    if rising_edge(clock) then
+      prev_state_s <= curr_state_s;
+      case curr_state_s is
+        when rset_state_c =>
+          command  <= cmd_do_reset_c;
+          argument <= arg_do_reset_c;
+        when strt_state_c =>
+          command  <= cmd_do_start_c;
+          argument <= arg_do_start_c;
+        when init_state_c =>
+          command  <= cmd_go_idle_state_c;
+          argument <= arg_go_idle_state_c;
+        when bsiz_state_c =>
+          command  <= cmd_set_blocklen_c;
+          argument <= arg_set_blocklen_c;
+        when read_state_c =>
+          command  <= cmd_read_single_block_c;
+          argument <= address & pad_read_single_block_c;
+        when others =>
+          prev_state_s <= prev_state_s;
+      end case;
+    end if;
   end process;
   
   -- verify : process(clock, reset, curr_state_s)
@@ -103,24 +124,7 @@ begin
     -- end if;
   -- end;
   
-  sequence : process(clock, reset, next_state_s)
-  begin
-    if reset = '1' then
-      curr_state_s <= rset_state_c;
-    elsif rising_edge(clock) then
-      case curr_state_s is
-        when rset_state_c => curr_state_s <= strt_state_c;
-        when strt_state_c => curr_state_s <= send_state_c;
-        when init_state_c => curr_state_s <= send_state_c;
-        when bsiz_state_c => curr_state_s <= send_state_c;
-        when read_state_c => curr_state_s <= send_state_c;
-        when send_state_c => curr_state_s <= shft_state_c;
-        when shft_state_c => curr_state_s <= next_state_s;
-        when vrfy_state_c => curr_state_s <= next_state_s;
-        when idle_state_c => curr_state_s <= next_state_s;
-      end case;
-    end if;
-  end process;
+  
   
   -- sequence : process(clock, reset, curr_s, next_s)
   -- begin
