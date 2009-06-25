@@ -44,6 +44,9 @@ package sd_globals is
   constant cmd_go_idle_state_c : std_logic_cmd_t := to_cmd(0);
   constant arg_go_idle_state_c : std_logic_arg_t := arg_null_c;
   
+  constant cmd_send_op_cond_c : std_logic_cmd_t := to_cmd(1);
+  constant arg_send_op_cond_c : std_logic_arg_t := arg_null_c;
+  
   constant cmd_set_blocklen_c : std_logic_cmd_t := to_cmd(16);
   constant arg_set_blocklen_c : std_logic_arg_t := to_arg(512);
   

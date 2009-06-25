@@ -45,15 +45,16 @@ architecture rtl of sd_manager_e is
   type state_t is (
     rset_state_c,
     strt_state_c,
+    idle_state_c,
     init_state_c,
     bsiz_state_c,
     read_state_c,
     send_state_c,
     shft_state_c,
     vrfy_state_c,
-    idle_state_c);
+    wait_state_c);
   signal curr_state_s : state_t;
-  signal prev_state_s : state_t;
+  signal succ_state_s : state_t;
   signal next_state_s : state_t;
   
   signal error_s : std_logic;
@@ -66,15 +67,16 @@ begin
       curr_state_s <= rset_state_c;
     elsif rising_edge(clock) then
       case curr_state_s is
-        when rset_state_c => curr_state_s <= strt_state_c;
-        when strt_state_c => curr_state_s <= send_state_c;
-        when init_state_c => curr_state_s <= send_state_c;
-        when bsiz_state_c => curr_state_s <= send_state_c;
-        when read_state_c => curr_state_s <= send_state_c;
+        when rset_state_c => curr_state_s <= send_state_c; succ_state_s <= strt_state_c;
+        when strt_state_c => curr_state_s <= send_state_c; succ_state_s <= idle_state_c;
+        when idle_state_c => curr_state_s <= send_state_c; succ_state_s <= init_state_c;
+        when init_state_c => curr_state_s <= send_state_c; succ_state_s <= bsiz_state_c;
+        when bsiz_state_c => curr_state_s <= send_state_c; succ_state_s <= wait_state_c;
+        when read_state_c => curr_state_s <= send_state_c; succ_state_s <= wait_state_c;
         when send_state_c => curr_state_s <= shft_state_c;
         when shft_state_c => curr_state_s <= next_state_s;
         when vrfy_state_c => curr_state_s <= next_state_s;
-        when idle_state_c => curr_state_s <= next_state_s;
+        when wait_state_c => curr_state_s <= next_state_s;
       end case;
     end if;
   end process;
@@ -83,7 +85,6 @@ begin
     variable address_v : std_logic_arg_t;
   begin
     if rising_edge(clock) then
-      prev_state_s <= curr_state_s;
       case curr_state_s is
         when rset_state_c =>
           command  <= cmd_do_reset_c;
@@ -91,9 +92,12 @@ begin
         when strt_state_c =>
           command  <= cmd_do_start_c;
           argument <= arg_do_start_c;
-        when init_state_c =>
+        when idle_state_c =>
           command  <= cmd_go_idle_state_c;
           argument <= arg_go_idle_state_c;
+        when init_state_c =>
+          command  <= cmd_send_op_cond_c;
+          argument <= arg_send_op_cond_c;
         when bsiz_state_c =>
           command  <= cmd_set_blocklen_c;
           argument <= arg_set_blocklen_c;
@@ -101,57 +105,39 @@ begin
           command  <= cmd_read_single_block_c;
           argument <= address & pad_read_single_block_c;
         when others =>
-          prev_state_s <= prev_state_s;
+          null;
       end case;
     end if;
   end process;
   
-  -- verify : process(clock, reset, curr_state_s)
-  -- begin
-    -- if reset = '1' then
-      -- error_s <= '0';
-    -- elsif rising_edge(clock) then
-      -- case curr_state_s is
-        -- when shft_state_c =>
-          -- if shifting = '0' then
-            -- next_state_s <= vrfy_state_c;
-          -- end if;
-        -- when vrfy_state_c then
-          -- if response = "00000000" then
-            -- error_s <= '0';
-          -- end if;
-      -- end case;
-    -- end if;
-  -- end;
-  
-  
-  
-  -- sequence : process(clock, reset, curr_s, next_s)
-  -- begin
-    -- if error = '1' then
-      -- next_s <= rset_state_c;
-    -- else
-      -- if curr_s = 
-    -- end if;
-    
-    -- case curr_s is
-      -- when rset_state_c =>
-        -- next_s <= 
-    -- end case;
-  -- end;
-  
-  -- output : process(clock, reset, curr_s, next_s)
-  -- begin
-    
-  -- end;
-  
-  -- transition : process(clock, reset, curr_s, next_s)
-  -- begin
-    -- if reset = '1' then
-      -- curr_s <= reset_state_c;
-    -- elsif rising_edge(clock) then
-      -- curr_s <= next_s;
-    -- end if;
-  -- end;
-  
+  action : process(clock, reset)
+  begin
+    if reset = '1' then
+      error_s <= '0';
+    elsif rising_edge(clock) then
+      case curr_state_s is
+        when send_state_c =>
+          next_state_s <= shft_state_c;
+        when shft_state_c =>
+          if shifting = '0' then
+            next_state_s <= vrfy_state_c;
+          end if;
+        when vrfy_state_c =>
+          if response = "00000000" then --TODO
+            error_s <= '0';
+            next_state_s <= succ_state_s;
+          else
+            error_s <= '1';
+            next_state_s <= rset_state_c;
+          end if;
+        when wait_state_c =>
+          if start = '1' then
+            next_state_s <= read_state_c;
+          end if;
+        when others =>
+          null;
+      end case;
+    end if;
+  end process;
+ 
 end rtl;
