@@ -37,6 +37,7 @@ set_global_assignment -name VHDL_FILE fhw_sd/sd_host.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_manager_e.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_io_e.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_counter_e.vhd -library fhw_sd
+set_global_assignment -name VHDL_FILE fhw_sd/sd_starter_e.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_globals.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_spi/spi_master.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE fhw_spi/spi_engine_e.vhd -library fhw_spi
@@ -178,6 +179,16 @@ set_global_assignment -name VECTOR_COMPARE_TRIGGER_MODE INPUT_EDGE
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 
+# start EDA_TOOL_SETTINGS(eda_simulation)
+# ---------------------------------------
+
+	# EDA Netlist Writer Assignments
+	# ==============================
+	set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
+
+# end EDA_TOOL_SETTINGS(eda_simulation)
+# -------------------------------------
+
 # start EDA_TOOL_SETTINGS(eda_design_synthesis)
 # ---------------------------------------------
 
@@ -189,16 +200,6 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 
 # end EDA_TOOL_SETTINGS(eda_design_synthesis)
 # -------------------------------------------
-
-# start EDA_TOOL_SETTINGS(eda_simulation)
-# ---------------------------------------
-
-	# EDA Netlist Writer Assignments
-	# ==============================
-	set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
-
-# end EDA_TOOL_SETTINGS(eda_simulation)
-# -------------------------------------
 
 # start EDA_TOOL_SETTINGS(eda_blast_fpga)
 # ---------------------------------------
