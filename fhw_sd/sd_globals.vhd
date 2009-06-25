@@ -23,7 +23,7 @@ package sd_globals is
 
   subtype  std_logic_cmd_t is std_logic_vector(5 downto 0);
   subtype  std_logic_arg_t is std_logic_vector(31 downto 0);
-  subtype  std_logic_rsp_t is std_logic_vector(7 downto 0);
+  subtype  std_logic_rsp_t is std_logic_vector(6 downto 0);
   
   function to_cmd(
     number : integer range 0 to 63) return std_logic_cmd_t;
