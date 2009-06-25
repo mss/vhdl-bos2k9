@@ -61,6 +61,7 @@ architecture rtl of sd_host is
     
       command  : out std_logic_cmd_t;
       argument : out std_logic_arg_t;
+      trigger  : out std_logic;
       response : in  std_logic_rsp_t;
       shifting : in  std_logic);
   end component;
@@ -72,6 +73,7 @@ architecture rtl of sd_host is
     
       command  : in  std_logic_cmd_t;
       argument : in  std_logic_arg_t;
+      trigger  : in  std_logic;
       response : out std_logic_rsp_t;
       shifting : out std_logic;
       
@@ -105,6 +107,7 @@ architecture rtl of sd_host is
   
   signal sd_command_s  : std_logic_cmd_t;
   signal sd_argument_s : std_logic_arg_t;
+  signal sd_trigger_s  : std_logic;
   signal sd_response_s : std_logic_rsp_t;
   signal sd_shifting_s : std_logic;
   
@@ -129,6 +132,7 @@ begin
     
     command  => sd_command_s,
     argument => sd_argument_s,
+    trigger  => sd_trigger_s,
     response => sd_response_s,
     shifting => sd_shifting_s);
   
@@ -138,6 +142,7 @@ begin
     
     command  => sd_command_s,
     argument => sd_argument_s,
+    trigger  => sd_trigger_s,
     response => sd_response_s,
     shifting => sd_shifting_s,
     

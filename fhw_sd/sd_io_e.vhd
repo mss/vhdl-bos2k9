@@ -26,6 +26,7 @@ entity sd_io_e is
     
     command  : in  std_logic_cmd_t;
     argument : in  std_logic_arg_t;
+    trigger  : in  std_logic;
     response : out std_logic_rsp_t;
     shifting : out std_logic;
     
@@ -41,18 +42,27 @@ end sd_io_e;
 -----------------------------------------------------------------------
 
 architecture rtl of sd_io_e is
+  signal spi_start_s : std_logic;
+  signal spi_busy_s  : std_logic;
+  signal sd_busy_s   : std_logic;
+
   signal frame_s : std_logic_frame_t;
 
   --signal counter_s : 
 begin
-  process(clock, reset)
+  shifting <= sd_busy_s;
+  
+  spi_start <= spi_start_s;
+  spi_busy_s <= spi_busy;
+
+  translate : process(clock, reset)
   begin
     if reset = '1' then
-      spi_start <= '0';
-      frame_s   <= (others => '0');
+      spi_start_s <= '0';
+      frame_s     <= (others => '0');
     elsif rising_edge(clock) then
     
-      spi_start <= '0';
+      spi_start_s <= '0';
       
       frame_s <= create_frame(command, argument);
     
@@ -69,6 +79,19 @@ begin
         when others =>
           null;
       end case;
+    end if;
+  end process;
+  
+  shifting_ff : process(clock, reset)
+  begin
+    if reset = '1' then
+      sd_busy_s <= spi_busy_s;
+    elsif rising_edge(clock) then
+      if trigger = '1' then
+        sd_busy_s <= '1';
+      elsif spi_start_s = '1' then
+        sd_busy_s <= spi_busy_s;
+      end if;
     end if;
   end process;
 end rtl;

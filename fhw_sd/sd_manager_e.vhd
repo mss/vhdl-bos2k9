@@ -33,7 +33,7 @@ entity sd_manager_e is
     
     command  : out std_logic_cmd_t;
     argument : out std_logic_arg_t;
-    --trigger  : out std_logic;
+    trigger  : out std_logic;
     shifting : in  std_logic;
     response : in  std_logic_rsp_t);
 end sd_manager_e;
@@ -57,7 +57,8 @@ architecture rtl of sd_manager_e is
   signal succ_state_s : state_t;
   signal next_state_s : state_t;
   
-  signal error_s : std_logic;
+  signal trigger_s : std_logic;
+  signal error_s   : std_logic;
 
 begin
   
@@ -113,10 +114,13 @@ begin
   action : process(clock, reset)
   begin
     if reset = '1' then
-      error_s <= '0';
+      error_s   <= '0';
+      trigger_s <= '0';
     elsif rising_edge(clock) then
+      trigger_s <= '0';
       case curr_state_s is
         when send_state_c =>
+          trigger_s <= '1';
           next_state_s <= shft_state_c;
         when shft_state_c =>
           if shifting = '0' then
