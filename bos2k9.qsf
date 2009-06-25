@@ -37,7 +37,6 @@ set_global_assignment -name VHDL_FILE fhw_sd/sd_host.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_manager_e.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_io_e.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_counter_e.vhd -library fhw_sd
-set_global_assignment -name VHDL_FILE fhw_sd/sd_starter_e.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_globals.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_spi/spi_master.vhd -library fhw_spi
 set_global_assignment -name VHDL_FILE fhw_spi/spi_engine_e.vhd -library fhw_spi

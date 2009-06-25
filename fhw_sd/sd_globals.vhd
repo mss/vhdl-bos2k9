@@ -8,6 +8,9 @@
 -- pragma library fhw_sd
 library fhw_sd;
 
+library fhw_tools;
+use fhw_tools.types.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -32,6 +35,8 @@ package sd_globals is
   function create_frame(
     cmd : std_logic_cmd_t;
     arg : std_logic_arg_t) return std_logic_frame_t;
+  function get_frame_head(
+    frame : std_logic_frame_t) return std_logic_byte_t;
   
   constant arg_null_c : std_logic_arg_t := (others => '0');
   
@@ -40,6 +45,9 @@ package sd_globals is
   
   constant cmd_do_start_c : std_logic_cmd_t := to_cmd(62);
   constant arg_do_start_c : std_logic_arg_t := to_arg(10); -- 75+ SCKs (10 byte)
+  
+  constant cmd_do_pipe_c : std_logic_cmd_t := to_cmd(61);
+  constant arg_do_pipe_c : std_logic_arg_t := to_arg(512);
   
   constant cmd_go_idle_state_c : std_logic_cmd_t := to_cmd(0);
   constant arg_go_idle_state_c : std_logic_arg_t := arg_null_c;
@@ -54,6 +62,7 @@ package sd_globals is
   constant pad_read_single_block_c : std_logic_vector(31 - block_address_width_c downto 0) := (others => '0');
   
   constant crc_c : std_logic_crc7_t := "1001010";
+  constant pad_c : std_logic_byte_t := (others => '1');
 
 end sd_globals;
 
@@ -74,8 +83,19 @@ package body sd_globals is
   function create_frame(
     cmd : std_logic_cmd_t;
     arg : std_logic_arg_t) return std_logic_frame_t is
+    variable frame_v : std_logic_frame_t;
   begin
-    return cmd(std_logic_cmd_t'high) & '1' & cmd & arg & crc_c & '1';
+    if cmd(std_logic_cmd_t'high) = '0' then
+      frame_v := "01" & cmd & arg & crc_c & "1";
+    else
+      frame_v := (others => '1');
+    end if;
+    return frame_v;
   end create_frame;
+  function get_frame_head(
+    frame : std_logic_frame_t) return std_logic_byte_t is
+  begin
+    return frame(std_logic_frame_t'high downto std_logic_frame_t'high - 7);
+  end get_frame_head;
 
 end sd_globals;

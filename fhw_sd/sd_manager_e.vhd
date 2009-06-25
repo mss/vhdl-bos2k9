@@ -49,6 +49,7 @@ architecture rtl of sd_manager_e is
     init_state_c,
     bsiz_state_c,
     read_state_c,
+    pipe_state_c,
     send_state_c,
     shft_state_c,
     vrfy_state_c,
@@ -73,7 +74,8 @@ begin
         when idle_state_c => curr_state_s <= send_state_c; succ_state_s <= init_state_c;
         when init_state_c => curr_state_s <= send_state_c; succ_state_s <= bsiz_state_c;
         when bsiz_state_c => curr_state_s <= send_state_c; succ_state_s <= wait_state_c;
-        when read_state_c => curr_state_s <= send_state_c; succ_state_s <= wait_state_c;
+        when read_state_c => curr_state_s <= send_state_c; succ_state_s <= pipe_state_c;
+        when pipe_state_c => curr_state_s <= send_state_c; succ_state_s <= wait_state_c;
         when send_state_c => curr_state_s <= shft_state_c;
         when shft_state_c => curr_state_s <= next_state_s;
         when vrfy_state_c => curr_state_s <= next_state_s;
@@ -105,6 +107,9 @@ begin
         when read_state_c =>
           command  <= cmd_read_single_block_c;
           argument <= address & pad_read_single_block_c;
+        when pipe_state_c =>
+          command  <= cmd_do_pipe_c;
+          argument <= arg_do_pipe_c;
         when others =>
           null;
       end case;
