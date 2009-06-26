@@ -73,22 +73,10 @@ begin
                        response_i_s,
                        shifting_i_s);
   
-  stimulus : process
-  begin
-    wait for clock_interval / 4;
-  
-    address_i_s <= (others => 'U');
-    start_i_s   <= '0';
-  
-    wait until falling_edge(busy_o_s);
-    
-    address_i_s <= (others => '0');
-    start_i_s   <= '0'; -- TODO
-  
-    wait;
-  end process;
-  
   response : process
+    constant rsp_err_c  : std_logic_rsp_t := "1000000";
+    constant rsp_idle_c : std_logic_rsp_t := "0000001";
+    constant rsp_ok_c   : std_logic_rsp_t := "0000000";
     procedure respond(
       rsp : std_logic_rsp_t) is
     begin
@@ -107,18 +95,64 @@ begin
       wait until rising_edge(clock_s);
       response_sent_s <= '0';
     end respond;
+    procedure respond_init is
+    begin
+      respond(rsp_ok_c);   -- rset
+      respond(rsp_ok_c);   -- strt
+      respond(rsp_idle_c); -- idle
+      respond(rsp_idle_c); -- init
+      respond(rsp_idle_c); -- init
+      respond(rsp_ok_c);   -- init
+      respond(rsp_ok_c);   -- bsiz
+    end;
   begin
     response_sent_s <= '0';
   
-    respond("0000000");
+    respond_init;
+    respond(rsp_err_c);  -- read
+    
+    respond_init;
+    respond(rsp_ok_c);   -- read
+    respond(rsp_ok_c);   -- pipe
+    respond(rsp_ok_c);   -- read
+    respond(rsp_ok_c);   -- pipe
+    respond(rsp_err_c);  -- read
     
     wait;
   end process;
-  
   shifting_i_s <= '0' when reset_s = '1'
              else '1' when trigger_o_s = '1'
              else '0' when response_sent_s = '1'
              else unaffected;
+  
+  starter : process
+  begin
+    address_i_s <= (others => 'U');
+    start_i_s   <= '0';
+    
+    wait until rising_edge(ready_o_s);
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+    
+    address_i_s <= (others => '0');
+    start_i_s   <= '1';
+    wait until rising_edge(clock_s);
+    start_i_s   <= '0';
+    
+    wait until rising_edge(trigger_o_s);
+    wait until rising_edge(trigger_o_s);
+  end process;
+  
+  mark: process
+  begin
+    test_s <= -1;
+    wait until falling_edge(reset_s);
+    test_s <= test_s + 1;
+    while true loop
+      wait until rising_edge(start_i_s);
+      test_s <= test_s + 1;
+    end loop;
+  end process;
   
   reset : process
   begin
