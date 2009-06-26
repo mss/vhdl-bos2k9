@@ -123,6 +123,7 @@ begin
   end process;
   
   ready   <= '1' when curr_state_s = wait_state_c else '0';
+  busy    <= '0' when curr_state_s = wait_state_c else '1'; -- TODO?
   trigger <= '1' when curr_state_s = send_state_c else '0';
   error_s <= response(6)
           or response(5)

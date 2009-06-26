@@ -77,7 +77,13 @@ begin
   begin
     wait for clock_interval / 4;
   
+    address_i_s <= (others => 'U');
+    start_i_s   <= '0';
+  
     wait until falling_edge(busy_o_s);
+    
+    address_i_s <= (others => '0');
+    start_i_s   <= '0'; -- TODO
   
     wait;
   end process;
