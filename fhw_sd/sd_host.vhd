@@ -2,7 +2,7 @@
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
 --
 -- TODO: description
--- NOTE: No SDHC (max. 2 GiB)
+-- NOTE: No SDHC (max. 4 GiB)
 
 -----------------------------------------------------------------------
 -- This entity is part of the following library:
