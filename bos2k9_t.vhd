@@ -6,6 +6,9 @@
 
 use work.bos2k9_globals.all;
 
+library fhw_tools;
+use fhw_tools.types.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
