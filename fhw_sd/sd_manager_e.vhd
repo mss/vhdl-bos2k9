@@ -133,10 +133,6 @@ begin
   ready   <= '1' when curr_state_s = wait_state_c else '0';
   busy    <= '0' when curr_state_s = wait_state_c else '1'; -- TODO?
   trigger <= '1' when curr_state_s = send_state_c else '0';
-  error   <= '0' when reset = '1'
-        else error_s when curr_state_s = rset_state_c
-        else '0'     when curr_state_s = vrfy_state_c
-        else unaffected;
   
   branch : process(clock)
   begin
@@ -176,6 +172,19 @@ begin
         when others =>
           null;
       end case;
+    end if;
+  end process;
+  
+  err : process(clock, reset)
+  begin
+    if reset = '1' then
+      error <= '0';
+    elsif rising_edge(clock) then
+      if curr_state_s = vrfy_state_c then
+        error <= '0';
+      elsif curr_state_s = rset_state_c and error_s = '1' then
+        error <= '1';
+      end if;
     end if;
   end process;
  
