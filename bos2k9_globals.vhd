@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library fhw_sd;
-use fhw_sd.sd_globals.all;
+use fhw_sd.sd_globals_p.all;
 
 package bos2k9_globals is
 

@@ -7,7 +7,8 @@
 -- This entity is part of the following library:
 -- pragma library fhw_sd
 library fhw_sd;
-use fhw_sd.sd_globals.all;
+use fhw_sd.sd_globals_p.all;
+use fhw_sd.sd_commands_p.all;
 
 library fhw_spi;
 use fhw_spi.spi_master;
