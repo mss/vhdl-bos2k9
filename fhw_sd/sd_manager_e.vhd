@@ -81,7 +81,7 @@ begin
         when read_state_c => curr_state_s <= send_state_c;
         when pipe_state_c => curr_state_s <= send_state_c;
         when send_state_c => curr_state_s <= shft_state_c;
-        when shft_state_c => curr_state_s <= vrfy_state_c;
+        when shft_state_c => curr_state_s <= next_state_s;
         when vrfy_state_c => curr_state_s <= jump_state_c;
         when jump_state_c => curr_state_s <= next_state_s;
         when wait_state_c => curr_state_s <= next_state_s;
