@@ -103,7 +103,7 @@ begin
     
     frame_i_s <= (others => 'U');
     start_i_s <= '0';
-    cnt_top_s <= 6 + 1 + 8 - 1;
+    cnt_top_s <= 6 + (8 - 6) + 1 - 1;
     wait until falling_edge(reset_s);
     
     while true loop
@@ -123,7 +123,7 @@ begin
   
   rxd : process
   begin
-    rxd_s <= (others => '0');
+    rxd_s <= "00000001";
     while true loop
       wait until rising_edge(spi_busy_i_s);
       rxd_s <= std_logic_vector(unsigned(rxd_s) + 1);
