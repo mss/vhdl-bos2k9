@@ -86,6 +86,10 @@ begin
     end if;
   end process;
   
+  pipe <= io_shift when command = cmd_do_pipe_c
+     else '0';
+  
+  
   -- translate : process(clock, reset)
   -- begin
     -- if reset = '1' then
