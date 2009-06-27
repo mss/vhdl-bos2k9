@@ -43,7 +43,7 @@ begin
           count_s <= 0;
           done    <= '1';
         else
-          count_s <= count_s - 1;
+          count_s <= count_s + 1;
         end if;
       end if;
     end if;
