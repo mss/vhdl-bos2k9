@@ -19,7 +19,7 @@
     <state pencolor="0" endstate="0" radius="40" description="" moore_outputs="" ypos="175" code="10" xpos="912" linewidth="1" >pipe</state>
     <state pencolor="0" endstate="0" radius="40" description="" moore_outputs="" ypos="191" code="11" xpos="561" linewidth="1" >loop</state>
     <state pencolor="0" endstate="0" radius="40" description="" moore_outputs="" ypos="292" code="12" xpos="1083" linewidth="1" >vrfy</state>
-    <state pencolor="0" endstate="0" radius="40" description="" moore_outputs="" ypos="173" code="13" xpos="1014" linewidth="1" >dump</state>
+    <state pencolor="0" endstate="0" radius="40" description="" moore_outputs="" ypos="173" code="13" xpos="1014" linewidth="1" >skip</state>
     <transition c1x="107.1335613130307" c2y="45.08453629972242" c1y="36.69252147551387" description="" straight="0" type="2" ypos="120.0138432258861" endx="524.025485826098" xpos="87.94773271647068" endy="46.5723387795035" c2x="451.8459869832808" >
       <from>0</from>
       <to>1</to>
@@ -152,7 +152,7 @@
       <inputs default="0" any="0" invert="0" ></inputs>
       <outputs></outputs>
     </transition>
-    <transition c1x="1024.155253301478" c2y="32.07537578006965" c1y="4.625366666158982" description="" straight="0" type="2" ypos="133.4020202535533" endx="603.639697216413" xpos="1019.656854249492" endy="42.6432841599442" c2x="786.5558088664668" >
+    <transition c1x="1024.155253301478" c2y="32.07537578006965" c1y="4.625366666158982" description="" straight="0" type="2" ypos="133.4020202535534" endx="603.639697216413" xpos="1019.656854249492" endy="42.6432841599442" c2x="786.5558088664668" >
       <from>13</from>
       <to>1</to>
       <inputs default="0" any="0" invert="0" ></inputs>
