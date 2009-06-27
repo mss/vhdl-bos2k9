@@ -52,6 +52,7 @@ architecture rtl of sd_manager_e is
     bsiz_state_c,
     read_state_c,
     pipe_state_c,
+    dump_state_c,
     send_state_c,
     shft_state_c,
     vrfy_state_c,
@@ -80,6 +81,7 @@ begin
         when bsiz_state_c => curr_state_s <= send_state_c;
         when read_state_c => curr_state_s <= send_state_c;
         when pipe_state_c => curr_state_s <= send_state_c;
+        when dump_state_c => curr_state_s <= send_state_c;
         when send_state_c => curr_state_s <= shft_state_c;
         when shft_state_c => curr_state_s <= next_state_s;
         when vrfy_state_c => curr_state_s <= jump_state_c;
@@ -116,6 +118,9 @@ begin
         when pipe_state_c =>
           command  <= cmd_do_pipe_c;
           argument <= arg_do_pipe_c;
+        when pipe_state_c =>
+          command  <= cmd_do_dump_c;
+          argument <= arg_do_dump_c;
         when others =>
           prev_state_s <= prev_state_s;
       end case;
@@ -155,7 +160,8 @@ begin
               when init_state_c => next_state_s <= init_state_c;
               when bsiz_state_c => next_state_s <= wait_state_c;
               when read_state_c => next_state_s <= pipe_state_c;
-              when pipe_state_c => next_state_s <= wait_state_c;
+              when pipe_state_c => next_state_s <= dump_state_c;
+              when dump_state_c => next_state_s <= wait_state_c;
               when others => null;
             end case;
           end if;
