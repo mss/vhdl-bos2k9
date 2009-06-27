@@ -227,6 +227,7 @@ begin
     top  => cnt_top_s,
     done => cnt_done_s);
   
+  cs <= not spi_busy_s;
   spi : spi_master port map(
     clk => clk,
     rst => rst,
@@ -239,5 +240,4 @@ begin
     miso  => miso,
     mosi  => mosi,
     sck   => sck);
-  cs <= spi_cs_n;
 end rtl;

@@ -141,6 +141,7 @@ begin
   begin
 
     busy_led_s  <= sd_busy_s;
+    ready_led_s <= sd_ready_s;
     error_led_s <= sd_error_s;
     
     sd_start_s <= start_btn_s;
