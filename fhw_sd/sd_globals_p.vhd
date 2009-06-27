@@ -31,6 +31,8 @@ package sd_globals_p is
     number : integer range 0 to 65535) return std_logic_arg_t;
   function get_cmd_type(
     cmd : std_logic_cmd_t) return std_logic;
+  constant cmd_type_std_c : std_logic := '0';
+  constant cmd_type_int_c : std_logic := '1';
   
   subtype  std_logic_frame_t is std_logic_vector(47 downto 0);
   subtype  std_logic_crc7_t  is std_logic_vector(6 downto 0);
@@ -81,7 +83,7 @@ package body sd_globals_p is
     arg : std_logic_arg_t) return std_logic_frame_t is
     variable frame_v : std_logic_frame_t;
   begin
-    if get_cmd_type(cmd) = '0' then
+    if get_cmd_type(cmd) = cmd_type_std_c then
       frame_v := "01" & cmd & arg & crc_c & "1";
     else
       frame_v := (others => '1');
@@ -106,7 +108,7 @@ package body sd_globals_p is
     arg : std_logic_arg_t) return counter_top_t is
     variable cnt_v : counter_top_t;
   begin
-    if get_cmd_type(cmd) = '0' then
+    if get_cmd_type(cmd) = cmd_type_std_c then
       cnt_v := std_logic_cmd_t'length + 8 + 1;
     else
       cnt_v := to_integer(unsigned(arg));
