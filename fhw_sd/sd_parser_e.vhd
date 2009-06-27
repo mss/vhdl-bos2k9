@@ -88,43 +88,24 @@ begin
   
   pipe <= io_shift when command = cmd_do_pipe_c
      else '0';
-  
-  
-  -- translate : process(clock, reset)
-  -- begin
-    -- if reset = '1' then
-      -- spi_start_s <= '0';
-      -- frame_s     <= (others => '0');
-    -- elsif rising_edge(clock) then
-    
-      -- spi_start_s <= '0';
-      
-      -- 
-    
-      -- case command is
-        -- when cmd_do_reset_c =>
-          -- spi_txd <= (others => '1');
-          
-        -- when cmd_do_start_c =>
-          -- null;
-        -- when cmd_set_blocklen_c =>
-          -- null;
-        -- when cmd_read_single_block_c =>
-          
-        -- when others =>
-          -- null;
-      -- end case;
-    -- end if;
-  -- end process;
-  
-  -- framer : process(clock)
-  -- begin
-    -- if rising_edge(clock) then
-      -- case state_s is
-        -- when load_state_c => frame_s <= create_frame(command, argument);
-        -- when shft_state_c => frame_s <= 
-        -- when others => null;
-      -- end case;
-    -- end if;
-  -- end process;
+  responder : process(clock)
+  begin
+    if rising_edge(clock) then
+      case get_cmd_type(command) is
+        when cmd_type_std_c =>
+          case state_s is
+            when send_state_c =>
+              response <= (others => '1');
+            when next_state_c =>
+              if io_data(7) = '0' then
+                response <= io_data(6 downto 0);
+              end if;
+            when others =>
+              null;
+          end case;
+        when cmd_type_int_c =>
+          response <= (others => '0');
+      end case;
+    end if;
+  end process;
 end rtl;
