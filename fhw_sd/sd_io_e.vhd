@@ -61,11 +61,21 @@ begin
           else unaffected;
   spi_start <= '1' when state_s = send_state_c else '0';
   
-  cnt_tick  <= '1' when state_s = send_state_c else '0';
-  done_s    <= '0' when state_s = load_state_c
-          else '1' when state_s = shft_state_c and cnt_done = '1'
-          else unaffected;
+  cnt_tick  <= '1' when state_s = send_state_c
+          else '1' when state_s = load_state_c
+          else '0';
 
+  status : process(clock)
+  begin
+    if rising_edge(clock) then
+      if state_s = idle_state_c then
+        done_s <= '0';
+      elsif cnt_done = '1' then
+        done_s <= '1';
+      end if;
+    end if;
+  end process;
+          
   sequence : process(clock, reset)
   begin
     if reset = '1' then

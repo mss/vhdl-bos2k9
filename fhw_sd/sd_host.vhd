@@ -47,7 +47,7 @@ entity sd_host is
 
 architecture rtl of sd_host is
 
-  constant counter_max_c : positive := 511;
+  constant counter_max_c : positive := 512;
   subtype  counter_top_t is natural range 1 to counter_max_c;
   
   component sd_manager_e is

@@ -48,13 +48,13 @@ architecture test of sd_io_t is
   end component;
   component sd_counter_e is
     generic(
-      max : positive := 31);
+      max : positive := 32);
     port(
       clock  : in  std_logic;
       reset  : in  std_logic;
       enable : in  std_logic;
     
-      top  : in  integer range 1 to 31;
+      top  : in  integer range 1 to 32;
       done : out std_logic);
   end component;
 
@@ -103,7 +103,7 @@ begin
     
     frame_i_s <= (others => 'U');
     start_i_s <= '0';
-    cnt_top_s <= 6 + (8 - 6) + 1 - 1;
+    cnt_top_s <= 6 + (8 - 6) + 1;
     wait until falling_edge(reset_s);
     
     while true loop
