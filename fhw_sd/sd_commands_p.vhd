@@ -23,7 +23,7 @@ package sd_commands_p is
   constant arg_do_pipe_c : std_logic_arg_t := to_arg(512);
   
   constant cmd_do_dump_c : std_logic_cmd_t := to_cmd(60);
-  constant arg_do_dump_c : std_logic_cmd_t := to_cmd(2); -- CRC16
+  constant arg_do_dump_c : std_logic_arg_t := to_arg(2); -- CRC16
   
   constant cmd_go_idle_state_c : std_logic_cmd_t := to_cmd(0);
   constant arg_go_idle_state_c : std_logic_arg_t := arg_null_c;

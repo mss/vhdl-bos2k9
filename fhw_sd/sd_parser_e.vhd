@@ -21,8 +21,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity sd_parser_e is
-  generic(
-    counter_max : positive);
   port(
     clock : in std_logic;
     reset : in std_logic;
@@ -41,15 +39,52 @@ entity sd_parser_e is
     io_data  : in  std_logic_byte_t;
     io_shift : in  std_logic;
       
-    cnt_top  : out natural range 1 to counter_max);
+    cnt_top  : out counter_top_t);
 end sd_parser_e;
 
 -----------------------------------------------------------------------
 
 architecture rtl of sd_parser_e is
-
-begin
+  type state_t is(
+    idle_state_c,
+    send_state_c,
+    loop_state_c,
+    next_state_c);
+  signal state_s : state_t;
   
+  signal frame_s : std_logic_frame_t;
+begin
+  shifting <= '0' when state_s = idle_state_c else '1';
+  
+  io_start <= '1' when state_s = send_state_c else '0';
+  io_frame <= create_frame(command, argument);
+  cnt_top  <= create_counter_top(command, argument);
+  
+  sequence : process(clock, reset)
+  begin
+    if reset = '1' then
+      state_s <= idle_state_c;
+    elsif rising_edge(clock) then
+      case state_s is
+        when idle_state_c =>
+          if trigger = '1' then
+            state_s <= send_state_c;
+          end if;
+        when send_state_c =>
+          state_s <= loop_state_c;
+        when loop_state_c =>
+          if io_shift = '1' then
+            state_s <= next_state_c;
+          end if;
+        when next_state_c =>
+          if io_busy = '1' then
+            state_s <= loop_state_c;
+          else
+            state_s <= idle_state_c;
+          end if;
+      end case;
+    end if;
+  end process;
   
   -- translate : process(clock, reset)
   -- begin
@@ -60,7 +95,7 @@ begin
     
       -- spi_start_s <= '0';
       
-      -- frame_s <= create_frame(command, argument);
+      -- 
     
       -- case command is
         -- when cmd_do_reset_c =>
@@ -83,7 +118,7 @@ begin
     -- if rising_edge(clock) then
       -- case state_s is
         -- when load_state_c => frame_s <= create_frame(command, argument);
-        -- when shft_state_c => frame_s <= frame_s(std_logic_frame_t'high - 8 downto 0) & pad_c;
+        -- when shft_state_c => frame_s <= 
         -- when others => null;
       -- end case;
     -- end if;

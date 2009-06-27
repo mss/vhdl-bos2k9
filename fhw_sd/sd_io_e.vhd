@@ -57,8 +57,7 @@ begin
   shift     <= '1' when state_s = next_state_c else '0';
   data      <= spi_rxd;
   
-  spi_txd   <= get_frame_head(frame_s) when state_s = send_state_c
-          else unaffected;
+  spi_txd   <= get_frame_head(frame_s);
   spi_start <= '1' when state_s = send_state_c else '0';
   
   cnt_tick  <= '1' when state_s = send_state_c
@@ -109,7 +108,7 @@ begin
     if rising_edge(clock) then
       case state_s is
         when load_state_c => frame_s <= frame;
-        when next_state_c => frame_s <= frame_s(std_logic_frame_t'high - 8 downto 0) & pad_c;
+        when next_state_c => frame_s <= shift_frame(frame_s);
         when others => null;
       end case;
     end if;

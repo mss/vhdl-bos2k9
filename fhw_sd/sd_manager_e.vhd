@@ -118,7 +118,7 @@ begin
         when pipe_state_c =>
           command  <= cmd_do_pipe_c;
           argument <= arg_do_pipe_c;
-        when pipe_state_c =>
+        when dump_state_c =>
           command  <= cmd_do_dump_c;
           argument <= arg_do_dump_c;
         when others =>

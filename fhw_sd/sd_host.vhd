@@ -46,9 +46,6 @@ entity sd_host is
 -----------------------------------------------------------------------
 
 architecture rtl of sd_host is
-
-  constant counter_max_c : positive := 512;
-  subtype  counter_top_t is natural range 1 to counter_max_c;
   
   component sd_manager_e is
     port(
@@ -70,8 +67,6 @@ architecture rtl of sd_host is
   end component;
   
   component sd_parser_e is
-    generic(
-      counter_max : positive := counter_max_c);
     port(
       clock : in std_logic;
       reset : in std_logic;
