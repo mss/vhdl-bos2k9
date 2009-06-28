@@ -69,6 +69,9 @@ architecture test of sd_parser_t is
   signal cnt_top_o_s  : counter_top_t;
   
   constant address_c  : std_logic_block_address_t := "10101010101010101010101";
+  
+  signal counter_s : natural;
+  signal delay_s   : natural;
 begin
   dut : sd_parser_e port map(clock_s, reset_s,
     command_i_s,
@@ -87,8 +90,10 @@ begin
   stimulus : process
     procedure send(
       cmd : std_logic_cmd_t;
-      arg : std_logic_arg_t) is
+      arg : std_logic_arg_t;
+      cnt : natural) is
     begin
+      delay_s <= cnt;
       command_i_s  <= cmd;
       argument_i_s <= arg;
       trigger_i_s  <= '1';
@@ -98,18 +103,68 @@ begin
     end send;
   begin
     wait for clock_interval / 4;
+    
+    command_i_s  <= (others => 'U');
+    argument_i_s <= (others => 'U');
+    trigger_i_s  <= '0';
     wait until falling_edge(reset_s);
     
     -- Test standard command with argument.
-    send(cmd_read_single_block_c, address_c & pad_read_single_block_c);
+    send(cmd_read_single_block_c,
+      address_c & pad_read_single_block_c,
+      6 + 2);
     
     -- Test internal command with argument shorter than frame size.
-    send(cmd_do_skip_c, arg_do_skip_c);
+    send(cmd_do_skip_c,
+      arg_do_skip_c,
+      1);
     
     -- Test internal command with long argument and piping.
-    send(cmd_do_pipe_c, arg_do_pipe_c);
+    send(cmd_do_pipe_c,
+      arg_do_pipe_c,
+      1);
     
     wait;
+  end process;
+  
+  io_data : process
+  begin
+    data_i_s <= (others => 'U');
+    
+    wait until rising_edge(start_o_s);
+    
+    while shifting_o_s = '1' loop
+      if counter_s = delay_s then
+        data_i_s <= (others => '0');
+      else
+        data_i_s <= (others => '1');
+      end if;
+    end loop;
+  end process;
+  
+  io_flow : process
+  begin
+    busy_i_s  <= '0';
+    shift_i_s <= 'U';
+    counter_s <= 0;
+    
+    wait until rising_edge(start_o_s);
+    busy_i_s  <= '1';
+    while counter_s <= (cnt_top_o_s + 1) loop
+      shift_i_s <= '0';
+      wait until rising_edge(clock_s);
+      wait until rising_edge(clock_s);
+      wait until rising_edge(clock_s);
+      wait until rising_edge(clock_s);
+      wait until rising_edge(clock_s);
+      wait until rising_edge(clock_s);
+      wait until rising_edge(clock_s);
+      wait until rising_edge(clock_s);
+      wait until rising_edge(clock_s);
+      shift_i_s <= '1';
+      counter_s <= counter_s + 1;
+      wait until rising_edge(clock_s);
+    end loop;
   end process;
   
   reset : process
