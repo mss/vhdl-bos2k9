@@ -109,15 +109,15 @@ begin
     trigger_i_s  <= '0';
     wait until falling_edge(reset_s);
     
-    -- Test standard command with argument.
-    send(cmd_read_single_block_c,
-      address_c & pad_read_single_block_c,
-      6 + 2);
-    
     -- Test internal command with argument shorter than frame size.
     send(cmd_do_skip_c,
       arg_do_skip_c,
       1);
+
+    -- Test standard command with argument.
+    send(cmd_read_single_block_c,
+      address_c & pad_read_single_block_c,
+      6 + 2);
     
     -- Test internal command with long argument and piping.
     send(cmd_do_pipe_c,
