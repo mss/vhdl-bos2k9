@@ -92,8 +92,10 @@ package body sd_globals_p is
   end create_frame;
   function shift_frame(
     frame : std_logic_frame_t) return std_logic_frame_t is
+    variable frame_v : std_logic_frame_t;
   begin
-    return frame(std_logic_frame_t'high - 8 downto 0) & pad_c;
+    frame_v := frame(std_logic_frame_t'high - 8 downto 0) & pad_c;
+    return frame_v;
   end shift_frame;
   function get_frame_head(
     frame : std_logic_frame_t) return std_logic_byte_t is
