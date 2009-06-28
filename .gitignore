@@ -10,3 +10,4 @@ transcript
 *.dpf
 *.mpf
 *.mti
+vsim.*
