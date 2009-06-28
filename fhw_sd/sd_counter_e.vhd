@@ -15,8 +15,9 @@ entity sd_counter_e is
     max : positive);
   port(
     clock  : in  std_logic;
-    reset  : in  std_logic;
     enable : in  std_logic;
+    
+    rewind : in  std_logic;
     
     top  : in  natural range 1 to max;
     done : out std_logic);
@@ -29,17 +30,16 @@ architecture rtl of sd_counter_e is
   subtype count_t is natural range 0 to max;
   signal  count_s : count_t;
 begin
-  counter : process(clock, reset)
+  counter : process(clock)
   begin
-    if reset = '1' then
-      count_s <= 0;
-      done    <= '0';
-    elsif rising_edge(clock) then
+    if rising_edge(clock) then
       -- `done` must be high for a single `clock` only, even if
       -- `enable` is low.
       done <= '0';
       if enable  = '1' then
-        if count_s = top then
+        if rewind = '1' then
+	  count_s <= 0;
+        elsif count_s = top then
           count_s <= 0;
           done    <= '1';
         else

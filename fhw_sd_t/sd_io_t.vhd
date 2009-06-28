@@ -51,8 +51,9 @@ architecture test of sd_io_t is
       max : positive := 32);
     port(
       clock  : in  std_logic;
-      reset  : in  std_logic;
       enable : in  std_logic;
+    
+      rewind : in  std_logic;
     
       top  : in  integer range 1 to 32;
       done : out std_logic);
@@ -76,6 +77,7 @@ architecture test of sd_io_t is
   signal spi_rxd_i_s   : std_logic_byte_t;
   
   signal cnt_top_s : positive;
+  signal cnt_res_s : std_logic;
   
   signal txd_s : std_logic_byte_t;
   signal rxd_s : std_logic_byte_t;
@@ -92,10 +94,12 @@ begin
     spi_busy_i_s,
     spi_txd_o_s,
     spi_rxd_i_s);
-  cnt : sd_counter_e port map(clock_s, reset_s,
+  cnt : sd_counter_e port map(clock_s,
     cnt_tick_o_s,
+    cnt_res_s,
     cnt_top_s,
     cnt_done_i_s);
+  cnt_res_s <= start_i_s;
   
   stimulus : process
   begin

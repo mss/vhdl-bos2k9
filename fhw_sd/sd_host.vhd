@@ -113,8 +113,9 @@ architecture rtl of sd_host is
       max : positive := counter_max_c);
     port(
       clock  : in  std_logic;
-      reset  : in  std_logic;
       enable : in  std_logic;
+    
+      rewind : in  std_logic;
     
       top  : in  counter_top_t;
       done : out std_logic);
@@ -221,8 +222,9 @@ begin
   
   counter : sd_counter_e port map(
     clock => clk,
-    reset => rst,
     enable => cnt_tick_s,
+    
+    rewind => io_start_s,
     
     top  => cnt_top_s,
     done => cnt_done_s);
