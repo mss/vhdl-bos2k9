@@ -32,7 +32,6 @@ set_global_assignment -name LAST_QUARTUS_VERSION 8.1
 set_global_assignment -name FLOW_ENABLE_RTL_VIEWER ON
 set_global_assignment -name SMART_RECOMPILE ON
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY out
-set_global_assignment -name MISC_FILE "E:/vhdl/bos2k9/bos2k9.dpf"
 set_global_assignment -name VHDL_FILE fhw_sd/sd_host.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_manager_e.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_parser_e.vhd -library fhw_sd
