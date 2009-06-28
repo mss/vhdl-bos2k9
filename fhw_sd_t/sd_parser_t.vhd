@@ -9,6 +9,7 @@ library fhw_sd_t;
 library fhw_sd;
 use fhw_sd.all;
 use fhw_sd.sd_globals_p.all;
+use fhw_sd.sd_commands_p.all;
 
 library fhw_tools;
 use fhw_tools.types.all;
@@ -67,7 +68,7 @@ architecture test of sd_parser_t is
   signal shift_i_s    : std_logic;
   signal cnt_top_o_s  : counter_top_t;
   
-  constant address_c  : std_logic_address_t := "10101010101010101010101";
+  constant address_c  : std_logic_block_address_t := "10101010101010101010101";
 begin
   dut : sd_parser_e port map(clock_s, reset_s,
     command_i_s,
@@ -84,20 +85,29 @@ begin
     cnt_top_o_s);
   
   stimulus : process
+    procedure send(
+      cmd : std_logic_cmd_t;
+      arg : std_logic_arg_t) is
+    begin
+      command_i_s  <= cmd;
+      argument_i_s <= arg;
+      trigger_i_s  <= '1';
+      wait until rising_edge(clock_s);
+      trigger_i_s  <= '0';
+      wait until falling_edge(shifting_o_s);
+    end send;
   begin
     wait for clock_interval / 4;
+    wait until falling_edge(reset_s);
     
     -- Test standard command with argument.
-    command_s  <= cmd_read_single_block_c;
-    argument_s <= address_c & pad_read_single_block_c;
+    send(cmd_read_single_block_c, address_c & pad_read_single_block_c);
     
     -- Test internal command with argument shorter than frame size.
-    command_s  <= cmd_do_skip_c;
-    argument_s <= arg_do_skip_c;
+    send(cmd_do_skip_c, arg_do_skip_c);
     
     -- Test internal command with long argument and piping.
-    command_s  <= cmd_do_pipe_c;
-    argument_s <= arg_do_pipe_c;
+    send(cmd_do_pipe_c, arg_do_pipe_c);
     
     wait;
   end process;
