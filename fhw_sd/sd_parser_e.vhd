@@ -91,21 +91,20 @@ begin
   responder : process(clock)
   begin
     if rising_edge(clock) then
-      case get_cmd_type(command) is
-        when cmd_type_std_c =>
-          case state_s is
-            when send_state_c =>
-              response <= (others => '1');
-            when next_state_c =>
-              if io_data(7) = '0' then
-                response <= io_data(6 downto 0);
-              end if;
-            when others =>
-              null;
-          end case;
-        when cmd_type_int_c =>
-          response <= (others => '0');
-      end case;
+      if get_cmd_type(command) = cmd_type_std_c then
+        case state_s is
+          when send_state_c =>
+            response <= (others => '1');
+          when next_state_c =>
+            if io_data(7) = '0' then
+              response <= io_data(6 downto 0);
+            end if;
+          when others =>
+            null;
+        end case;
+      else
+        response <= (others => '0');
+      end if;
     end if;
   end process;
 end rtl;
