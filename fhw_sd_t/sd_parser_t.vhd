@@ -66,6 +66,8 @@ architecture test of sd_parser_t is
   signal data_i_s     : std_logic_byte_t;
   signal shift_i_s    : std_logic;
   signal cnt_top_o_s  : counter_top_t;
+  
+  constant address_c  : std_logic_address_t := "10101010101010101010101";
 begin
   dut : sd_parser_e port map(clock_s, reset_s,
     command_i_s,
@@ -84,6 +86,18 @@ begin
   stimulus : process
   begin
     wait for clock_interval / 4;
+    
+    -- Test standard command with argument.
+    command_s  <= cmd_read_single_block_c;
+    argument_s <= address_c & pad_read_single_block_c;
+    
+    -- Test internal command with argument shorter than frame size.
+    command_s  <= cmd_do_skip_c;
+    argument_s <= arg_do_skip_c;
+    
+    -- Test internal command with long argument and piping.
+    command_s  <= cmd_do_pipe_c;
+    argument_s <= arg_do_pipe_c;
     
     wait;
   end process;
