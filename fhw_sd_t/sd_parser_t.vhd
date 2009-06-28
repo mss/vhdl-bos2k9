@@ -139,6 +139,7 @@ begin
       else
         data_i_s <= (others => '1');
       end if;
+      wait until rising_edge(clock_s);
     end loop;
   end process;
   
