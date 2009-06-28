@@ -3,6 +3,7 @@ db/
 incremental_db/
 export_db/
 simulation/
+transcript
 *.qws
 *.rpt
 *.bak
