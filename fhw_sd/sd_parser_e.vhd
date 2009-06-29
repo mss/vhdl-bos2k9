@@ -65,6 +65,7 @@ architecture rtl of sd_parser_e is
 begin
   shifting <= '0' when state_s = idle_state_c
          else '1';
+  error    <= error_s;
   idled    <= is_std_cmd(command)
           and spi_rxd(0);
   pipe     <= '1' when command = cmd_do_pipe_c
