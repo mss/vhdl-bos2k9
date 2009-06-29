@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <!DOCTYPE qfsmproject SYSTEM 'qfsm.dtd'>
 <qfsmproject version="0.51" author="Qfsm" >
-  <machine nummooreout="0" transfontitalic="0" draw_it="1" statefontsize="8" transfont="Helvetica" statefontitalic="0" author="Malte S. Stretz" description="" version="1" name="sd_manage_e" arrowtype="1" numbits="4" statefontweight="50" statefont="Helvetica" numin="1" transfontsize="8" transfontweight="50" type="2" numout="0" initialstate="0" >
+  <machine nummooreout="0" transfontitalic="0" draw_it="1" statefontsize="8" transfont="Helvetica" statefontitalic="0" author="Malte S. Stretz" description="" version="1" name="sd_flow_e" arrowtype="1" numbits="4" statefontweight="50" statefont="Helvetica" numin="1" transfontsize="8" transfontweight="50" type="2" numout="0" initialstate="0" >
     <outputnames_moore></outputnames_moore>
     <inputnames>i_0</inputnames>
     <outputnames></outputnames>

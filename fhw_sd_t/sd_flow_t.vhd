@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
 --
--- Testing the sd_manager.
+-- Testing the sd_flow.
 -----------------------------------------------------------------------
 -- This entity is part of the following library:
 -- pragma library fhw_sd_t
@@ -16,15 +16,15 @@ use ieee.numeric_std.all;
 
 -----------------------------------------------------------------------
 
-entity sd_manager_t is
+entity sd_flow_t is
   generic(
     clock_interval : time := 20 us);
-end sd_manager_t;
+end sd_flow_t;
 
 -----------------------------------------------------------------------
 
-architecture test of sd_manager_t is
-  component sd_manager_e is
+architecture test of sd_flow_t is
+  component sd_flow_e is
     port(
       clock : in std_logic;
       reset : in std_logic;
@@ -34,13 +34,13 @@ architecture test of sd_manager_t is
       
       ready : out std_logic;
       busy  : out std_logic;
-      error : out std_logic;
     
       command  : out std_logic_cmd_t;
       argument : out std_logic_arg_t;
       trigger  : out std_logic;
-      response : in  std_logic_rsp_t;
-      shifting : in  std_logic);
+      shifting : in  std_logic;
+      error    : in  std_logic;
+      idled    : in  std_logic);
   end component;
 
   signal test_s : integer;
@@ -52,36 +52,35 @@ architecture test of sd_manager_t is
   signal start_i_s    : std_logic;
   signal ready_o_s    : std_logic;
   signal busy_o_s     : std_logic;
-  signal error_o_s    : std_logic;
   signal command_o_s  : std_logic_cmd_t;
   signal argument_o_s : std_logic_arg_t;
   signal trigger_o_s  : std_logic;
-  signal response_i_s : std_logic_rsp_t;
   signal shifting_i_s : std_logic;
+  signal error_i_s    : std_logic;
+  signal idled_i_s    : std_logic;
   
   signal response_sent_s : std_logic;
 begin
-  dut : sd_manager_e port map(clock_s, reset_s,
+  dut : sd_flow_e port map(clock_s, reset_s,
                        address_i_s,
                        start_i_s,
                        ready_o_s,
                        busy_o_s,
-                       error_o_s,
                        command_o_s,
                        argument_o_s,
                        trigger_o_s,
-                       response_i_s,
-                       shifting_i_s);
+                       shifting_i_s,
+                       error_i_s,
+                       idled_i_s);
   
   response : process
-    constant rsp_err_c  : std_logic_rsp_t := "1000000";
-    constant rsp_idle_c : std_logic_rsp_t := "0000001";
-    constant rsp_ok_c   : std_logic_rsp_t := "0000000";
     procedure respond(
-      rsp : std_logic_rsp_t) is
+      error : std_logic;
+      idled : std_logic) is
     begin
       wait until rising_edge(trigger_o_s);
-      response_i_s <= (others => 'U');
+      error_i_s <= 'U';
+      idled_i_s <= 'U';
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
@@ -90,38 +89,39 @@ begin
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
-      response_i_s <= rsp;
+      error_i_s <= error;
+      idled_i_s <= idled;
       response_sent_s <= '1';
       wait until rising_edge(clock_s);
       response_sent_s <= '0';
     end respond;
     procedure respond_init is
     begin
-      respond(rsp_ok_c);   -- rset
-      respond(rsp_ok_c);   -- strt
-      respond(rsp_idle_c); -- idle
-      respond(rsp_idle_c); -- init
-      respond(rsp_idle_c); -- init
-      respond(rsp_ok_c);   -- init
-      respond(rsp_ok_c);   -- bsiz
+      respond('0', '0');   -- rset
+      respond('0', '0');   -- strt
+      respond('0', '1'); -- idle
+      respond('0', '1'); -- init
+      respond('0', '1'); -- init
+      respond('0', '0');   -- init
+      respond('0', '0');   -- bsiz
     end;
   begin
     response_sent_s <= '0';
   
     respond_init;
-    respond(rsp_err_c);  -- read
+    respond('1', '0');  -- read
     
     respond_init;
-    respond(rsp_ok_c);   -- read
-    respond(rsp_ok_c);   -- seek
-    respond(rsp_ok_c);   -- pipe
-    respond(rsp_ok_c);   -- skip
-    respond(rsp_ok_c);   -- read
-    respond(rsp_ok_c);   -- seek
-    respond(rsp_ok_c);   -- pipe
-    respond(rsp_ok_c);   -- skip
+    respond('0', '0');   -- read
+    respond('0', '0');   -- seek
+    respond('0', '0');   -- pipe
+    respond('0', '0');   -- skip
+    respond('0', '0');   -- read
+    respond('0', '0');   -- seek
+    respond('0', '0');   -- pipe
+    respond('0', '0');   -- skip
     
-    respond(rsp_err_c);  -- read
+    respond('1', '0');  -- read
     
     wait;
   end process;

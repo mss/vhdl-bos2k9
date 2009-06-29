@@ -47,7 +47,7 @@ entity sd_host is
 
 architecture rtl of sd_host is
   
-  component sd_manager_e is
+  component sd_flow_e is
     port(
       clock : in std_logic;
       reset : in std_logic;
@@ -124,7 +124,7 @@ begin
   
   error <= sd_error_s;
   
-  driver : sd_manager_e port map(
+  driver : sd_flow_e port map(
     clock => clk,
     reset => rst,
     

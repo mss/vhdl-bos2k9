@@ -20,7 +20,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity sd_manager_e is
+entity sd_flow_e is
   port(
     clock : in std_logic;
     reset : in std_logic;
@@ -37,12 +37,11 @@ entity sd_manager_e is
     shifting : in  std_logic;
     error    : in  std_logic;
     idled    : in  std_logic);
-end sd_manager_e;
+end sd_flow_e;
 
 -----------------------------------------------------------------------
 
-architecture rtl of sd_manager_e is
-  
+architecture rtl of sd_flow_e is
   type state_t is (
     rset_state_c,
     strt_state_c,
@@ -62,7 +61,6 @@ architecture rtl of sd_manager_e is
   signal curr_state_s : state_t;
   signal prev_state_s : state_t;
   signal next_state_s : state_t;
-
 begin
   
   sequence : process(clock, reset)
