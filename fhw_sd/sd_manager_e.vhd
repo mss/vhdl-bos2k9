@@ -91,9 +91,11 @@ begin
   end process;
   
   output : process(clock, reset)
-    variable address_v : std_logic_arg_t;
   begin
-    if rising_edge(clock) then
+    if reset = '1' then
+      command  <= (others => '0');
+      argument <= (others => '0');
+    elsif rising_edge(clock) then
       prev_state_s <= curr_state_s;
       case curr_state_s is
         when rset_state_c =>

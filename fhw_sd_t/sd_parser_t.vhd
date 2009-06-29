@@ -106,8 +106,8 @@ begin
   begin
     wait for clock_interval / 4;
     
-    command_i_s  <= (others => 'U');
-    argument_i_s <= (others => 'U');
+    command_i_s  <= (others => '0');
+    argument_i_s <= (others => '0');
     trigger_i_s  <= '0';
     wait until falling_edge(reset_s);
     
