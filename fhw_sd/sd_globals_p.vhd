@@ -27,12 +27,14 @@ package sd_globals_p is
   
   constant cmd_type_std_c : std_logic := '0';
   constant cmd_type_int_c : std_logic := '1';
-  function to_std_cmd(
+  function to_cmd(
+    typ : std_logic;
     idx : integer range 0 to 31) return std_logic_cmd_t;
-  function to_int_cmd(
-    idx : integer range 0 to 15;
-    shd : std_logic) return std_logic_cmd_t;
   function get_cmd_type(
+    cmd : std_logic_cmd_t) return std_logic;
+  function is_std_cmd(
+    cmd : std_logic_cmd_t) return std_logic;
+  function is_int_cmd(
     cmd : std_logic_cmd_t) return std_logic;
   
   function to_arg(
@@ -64,31 +66,36 @@ end sd_globals_p;
 
 package body sd_globals_p is
 
-  function to_std_cmd(
+  function to_cmd(
+    typ : std_logic;
     idx : integer range 0 to 31) return std_logic_cmd_t is
-  begin
-    return std_logic_vector(to_unsigned(idx, std_logic_cmd_t'length));
-  end to_std_cmd;
-  function to_int_cmd(
-    idx : integer range 0 to 15;
-    shd : std_logic) return std_logic_cmd_t is
     variable cmd : std_logic_cmd_t;
   begin
-    cmd := "1" & shd & std_logic_vector(to_unsigned(idx, std_logic_cmd_t'length - 2));
+    cmd := typ & std_logic_vector(to_unsigned(idx, std_logic_cmd_t'length - 1));
     return cmd;
-  end to_int_cmd;
-  
-  function to_arg(
-    val : integer range 0 to 65535) return std_logic_arg_t is
-  begin
-    return std_logic_vector(to_unsigned(val, std_logic_arg_t'length));
-  end to_arg;
+  end to_cmd;
   
   function get_cmd_type(
     cmd : std_logic_cmd_t) return std_logic is
   begin
     return cmd(std_logic_cmd_t'high);
   end get_cmd_type;
+  function is_std_cmd(
+    cmd : std_logic_cmd_t) return std_logic is
+  begin
+    return not get_cmd_type(cmd);
+  end is_std_cmd;
+  function is_int_cmd(
+    cmd : std_logic_cmd_t) return std_logic is
+  begin
+    return get_cmd_type(cmd);
+  end is_int_cmd;
+  
+  function to_arg(
+    val : integer range 0 to 65535) return std_logic_arg_t is
+  begin
+    return std_logic_vector(to_unsigned(val, std_logic_arg_t'length));
+  end to_arg;
   
   function create_frame(
     cmd : std_logic_cmd_t;

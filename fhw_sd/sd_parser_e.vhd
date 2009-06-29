@@ -28,18 +28,21 @@ entity sd_parser_e is
     command  : in  std_logic_cmd_t;
     argument : in  std_logic_arg_t;
     trigger  : in  std_logic;
-    response : out std_logic_rsp_t;
     shifting : out std_logic;
+    error    : out std_logic;
+    idled    : out std_logic;
     
     pipe     : out std_logic;
-      
-    io_frame : out std_logic_frame_t;
-    io_start : out std_logic;
-    io_busy  : in  std_logic;
-    io_data  : in  std_logic_byte_t;
-    io_shift : in  std_logic;
-      
-    cnt_top  : out counter_top_t);
+    
+    cnt_top  : out counter_top_t;
+    cnt_tick : out std_logic;
+    cnt_done : in  std_logic;
+    
+    spi_start : out std_logic;
+    spi_busy  : in  std_logic;
+    spi_txd   : out std_logic_byte_t;
+    spi_rxd   : in  std_logic_byte_t;
+    spi_cs    : out std_logic);
 end sd_parser_e;
 
 -----------------------------------------------------------------------
@@ -47,18 +50,106 @@ end sd_parser_e;
 architecture rtl of sd_parser_e is
   type state_t is(
     idle_state_c,
+    load_state_c,
     send_state_c,
-    loop_state_c,
-    next_state_c);
+    shft_state_c,
+    vrfy_state_c,
+    loop_state_c);
   signal state_s : state_t;
   
   signal frame_s : std_logic_frame_t;
-begin
-  shifting <= '0' when state_s = idle_state_c else '1';
   
-  io_start <= '1' when state_s = send_state_c else '0';
-  io_frame <= create_frame(command, argument);
+  signal done_s  : std_logic;
+  signal break_s : std_logic;
+  signal error_s : std_logic;
+begin
+  shifting <= '0' when state_s = idle_state_c
+         else '1';
+  idled    <= is_std_cmd(command)
+          and spi_rxd(0);
+  pipe     <= '1' when command = cmd_do_pipe_c
+                   and state_s = loop_state_c
+         else '0';
+  
   cnt_top  <= create_counter_top(command, argument);
+  cnt_tick <= '1' when state_s = load_state_c
+         else '1' when state_s = send_state_c
+         else '0';
+  
+  spi_txd   <= get_frame_head(frame_s);
+  spi_start <= '1' when state_s = send_state_c
+          else '0';
+  
+  break_s <= spi_rxd(7) when get_cmd_type(command) = cmd_type_std_c
+        else spi_rxd(0) when command = cmd_do_seek_c
+        else '0';
+  
+  status : process(clock)
+  begin
+    if rising_edge(clock) then
+      case state_s is
+        when idle_state_c => done_s <= '0';
+        when shft_state_c => done_s <= done_s or cnt_done;
+        when vrfy_state_c => done_s <= done_s or break_s;
+        when others       => null;
+      end case;
+    end if;
+  end process;
+  
+  framer : process(clock)
+  begin
+    if rising_edge(clock) then
+      case state_s is
+        when load_state_c => frame_s <= create_frame(command, argument);
+        when loop_state_c => frame_s <= shift_frame(frame_s);
+        when others => null;
+      end case;
+    end if;
+  end process;
+  
+  parser : process(clock, reset)
+  begin
+    if reset = '1' then
+      error_s <= '0';
+    elsif rising_edge(clock) then
+      if state_s = loop_state_c and done_s = '1' then
+        if break_s = '1' then
+          if get_cmd_type(command) = cmd_type_std_c then
+            error_s <= spi_rxd(6)
+                    or spi_rxd(5)
+                    or spi_rxd(4)
+                    or spi_rxd(3)
+                    or spi_rxd(2)
+                    or spi_rxd(1);
+          elsif command = cmd_do_seek_c then
+            error_s <= spi_rxd(7);
+          else
+            error_s <= '0';
+          end if;
+        else
+          error_s <= '1';
+        end if;
+      end if;
+    end if;
+  end process;
+  
+  selector : process(clock, reset)
+  begin
+    if reset = '1' then
+      spi_cs <= '0';
+    elsif rising_edge(clock) then
+      case state_s is
+        when idle_state_c =>
+          spi_cs <= not error_s;
+        when load_state_c =>
+          if not command = cmd_do_reset_c then
+            spi_cs <= '1';
+          end if;
+        when others =>
+          null;
+      end case;
+    end if;
+  end process;
   
   sequence : process(clock, reset)
   begin
@@ -68,43 +159,25 @@ begin
       case state_s is
         when idle_state_c =>
           if trigger = '1' then
-            state_s <= send_state_c;
+            state_s <= load_state_c;
           end if;
+        when load_state_c =>
+          state_s <= send_state_c;
         when send_state_c =>
+          state_s <= shft_state_c;
+        when shft_state_c =>
+          if spi_busy = '0' then
+            state_s <= vrfy_state_c;
+          end if;
+        when vrfy_state_c =>
           state_s <= loop_state_c;
         when loop_state_c =>
-          if io_shift = '1' then
-            state_s <= next_state_c;
-          end if;
-        when next_state_c =>
-          if io_busy = '1' then
-            state_s <= loop_state_c;
-          else
+          if done_s = '1' then
             state_s <= idle_state_c;
+          else
+            state_s <= send_state_c;
           end if;
       end case;
-    end if;
-  end process;
-  
-  pipe <= io_shift when command = cmd_do_pipe_c
-     else '0';
-  responder : process(clock)
-  begin
-    if rising_edge(clock) then
-      if get_cmd_type(command) = cmd_type_std_c then
-        case state_s is
-          when send_state_c =>
-            response <= (others => '1');
-          when next_state_c =>
-            if io_data(7) = '0' then
-              response <= io_data(6 downto 0);
-            end if;
-          when others =>
-            null;
-        end case;
-      else
-        response <= (others => '0');
-      end if;
     end if;
   end process;
 end rtl;

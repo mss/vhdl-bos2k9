@@ -30,13 +30,13 @@ entity sd_manager_e is
     
     ready : out std_logic;
     busy  : out std_logic;
-    error : out std_logic;
     
     command  : out std_logic_cmd_t;
     argument : out std_logic_arg_t;
     trigger  : out std_logic;
     shifting : in  std_logic;
-    response : in  std_logic_rsp_t);
+    error    : in  std_logic;
+    idled    : in  std_logic);
 end sd_manager_e;
 
 -----------------------------------------------------------------------
@@ -62,9 +62,6 @@ architecture rtl of sd_manager_e is
   signal curr_state_s : state_t;
   signal prev_state_s : state_t;
   signal next_state_s : state_t;
-  
-  signal error_s   : std_logic;
-  signal idle_s    : std_logic;
 
 begin
   
@@ -132,14 +129,6 @@ begin
     end if;
   end process;
   
-  error_s <= response(6)
-          or response(5)
-          or response(4)
-          or response(3)
-          or response(2)
-          or response(1);
-  idle_s  <= response(0);
-  
   ready   <= '1' when curr_state_s = wait_state_c else '0';
   busy    <= '0' when curr_state_s = wait_state_c else '1'; -- TODO?
   trigger <= '1' when curr_state_s = send_state_c else '0';
@@ -155,9 +144,7 @@ begin
             next_state_s <= vrfy_state_c;
           end if;
         when vrfy_state_c =>
-          if error_s = '1' then
-            next_state_s <= rset_state_c;
-          else
+          if error = '0' then
             case prev_state_s is
               when rset_state_c => next_state_s <= strt_state_c;
               when strt_state_c => next_state_s <= idle_state_c;
@@ -170,9 +157,11 @@ begin
               when skip_state_c => next_state_s <= wait_state_c;
               when others => null;
             end case;
+          else
+            next_state_s <= rset_state_c;
           end if;
         when init_state_c =>
-          if idle_s = '1' then
+          if idled = '1' then
             next_state_s <= send_state_c;
           else
             next_state_s <= bsiz_state_c;
@@ -184,19 +173,6 @@ begin
         when others =>
           null;
       end case;
-    end if;
-  end process;
-  
-  err : process(clock, reset)
-  begin
-    if reset = '1' then
-      error <= '0';
-    elsif rising_edge(clock) then
-      if curr_state_s = vrfy_state_c then
-        error <= '0';
-      elsif curr_state_s = rset_state_c and error_s = '1' then
-        error <= '1';
-      end if;
     end if;
   end process;
  

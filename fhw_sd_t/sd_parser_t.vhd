@@ -36,18 +36,21 @@ architecture test of sd_parser_t is
       command  : in  std_logic_cmd_t;
       argument : in  std_logic_arg_t;
       trigger  : in  std_logic;
-      response : out std_logic_rsp_t;
       shifting : out std_logic;
+      error    : out std_logic;
+      idled    : out std_logic;
       
       pipe     : out std_logic;
       
-      io_frame : out std_logic_frame_t;
-      io_start : out std_logic;
-      io_busy  : in  std_logic;
-      io_data  : in  std_logic_byte_t;
-      io_shift : in  std_logic;
-      
-      cnt_top  : out counter_top_t);
+      cnt_top  : out counter_top_t;
+      cnt_tick : out std_logic;
+      cnt_done : in  std_logic;
+    
+      spi_start : out std_logic;
+      spi_busy  : in  std_logic;
+      spi_txd   : out std_logic_byte_t;
+      spi_rxd   : in  std_logic_byte_t;
+      spi_cs    : out std_logic);
   end component;
 
   signal test_s : integer;
@@ -58,42 +61,51 @@ architecture test of sd_parser_t is
   signal command_i_s  : std_logic_cmd_t;
   signal argument_i_s : std_logic_arg_t;
   signal trigger_i_s  : std_logic;
-  signal response_o_s : std_logic_rsp_t;
   signal shifting_o_s : std_logic;
+  signal error_o_s    : std_logic;
+  signal idled_o_s    : std_logic;
   signal pipe_o_s     : std_logic;
-  signal frame_o_s    : std_logic_frame_t;
+  signal top_o_s      : counter_top_t;
+  signal tick_o_s     : std_logic;
+  signal done_i_s     : std_logic;
   signal start_o_s    : std_logic;
   signal busy_i_s     : std_logic;
-  signal data_i_s     : std_logic_byte_t;
-  signal shift_i_s    : std_logic;
-  signal cnt_top_o_s  : counter_top_t;
+  signal txd_o_s      : std_logic_byte_t;
+  signal rxd_i_s      : std_logic_byte_t;
+  signal cs_o_s       : std_logic;
   
   constant address_c  : std_logic_block_address_t := "10101010101010101010101";
   
   signal counter_s : natural;
   signal delay_s   : natural;
+  signal data_s    : std_logic_byte_t;
 begin
   dut : sd_parser_e port map(clock_s, reset_s,
     command_i_s,
     argument_i_s,
     trigger_i_s,
-    response_o_s,
     shifting_o_s,
+    error_o_s,
+    idled_o_s,
     pipe_o_s,
-    frame_o_s,
+    top_o_s,
+    tick_o_s,
+    done_i_s,
     start_o_s,
     busy_i_s,
-    data_i_s,
-    shift_i_s,
-    cnt_top_o_s);
+    txd_o_s,
+    rxd_i_s,
+    cs_o_s);
   
   stimulus : process
     procedure send(
       cmd : std_logic_cmd_t;
       arg : std_logic_arg_t;
-      cnt : natural) is
+      cnt : natural;
+      dat : std_logic_byte_t) is
     begin
       delay_s <= cnt;
+      data_s  <= dat;
       command_i_s  <= cmd;
       argument_i_s <= arg;
       trigger_i_s  <= '1';
@@ -112,32 +124,32 @@ begin
     -- Test internal command with argument shorter than frame size.
     send(cmd_do_skip_c,
       arg_do_skip_c,
-      1);
+      1, x"00");
 
     -- Test standard command with argument.
     send(cmd_read_single_block_c,
       address_c & pad_read_single_block_c,
-      6 + 2);
+      6 + 2, x"00");
     
     -- Test internal command with long argument and piping.
     send(cmd_do_pipe_c,
       arg_do_pipe_c,
-      1);
+      1, x"00");
     
     wait;
   end process;
   
   io_data : process
   begin
-    data_i_s <= (others => 'U');
+    rxd_i_s <= (others => 'U');
     
     wait until rising_edge(start_o_s);
     
     while shifting_o_s = '1' loop
       if counter_s = delay_s then
-        data_i_s <= (others => '0');
+        rxd_i_s <= data_s;
       else
-        data_i_s <= (others => '1');
+        rxd_i_s <= (others => '1');
       end if;
       wait until rising_edge(clock_s);
     end loop;
@@ -146,13 +158,11 @@ begin
   io_flow : process
   begin
     busy_i_s  <= '0';
-    shift_i_s <= 'U';
     counter_s <= 0;
     
     wait until rising_edge(start_o_s);
     busy_i_s  <= '1';
-    while counter_s <= (cnt_top_o_s + 1) loop
-      shift_i_s <= '0';
+    while counter_s <= (top_o_s + 1) loop
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
@@ -162,7 +172,6 @@ begin
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
-      shift_i_s <= '1';
       counter_s <= counter_s + 1;
       wait until rising_edge(clock_s);
     end loop;
