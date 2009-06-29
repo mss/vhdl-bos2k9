@@ -25,14 +25,18 @@ package sd_globals_p is
   subtype  std_logic_arg_t is std_logic_vector(31 downto 0);
   subtype  std_logic_rsp_t is std_logic_vector(6 downto 0);
   
-  function to_cmd(
-    number : integer range 0 to 63) return std_logic_cmd_t;
-  function to_arg(
-    number : integer range 0 to 65535) return std_logic_arg_t;
-  function get_cmd_type(
-    cmd : std_logic_cmd_t) return std_logic;
   constant cmd_type_std_c : std_logic := '0';
   constant cmd_type_int_c : std_logic := '1';
+  function to_std_cmd(
+    idx : integer range 0 to 31) return std_logic_cmd_t;
+  function to_int_cmd(
+    idx : integer range 0 to 15;
+    shd : std_logic) return std_logic_cmd_t;
+  function get_cmd_type(
+    cmd : std_logic_cmd_t) return std_logic;
+  
+  function to_arg(
+    val : integer range 0 to 65535) return std_logic_arg_t;
   
   subtype  std_logic_frame_t is std_logic_vector(47 downto 0);
   subtype  std_logic_crc7_t  is std_logic_vector(6 downto 0);
@@ -60,16 +64,24 @@ end sd_globals_p;
 
 package body sd_globals_p is
 
-  function to_cmd(
-    number : integer range 0 to 63) return std_logic_cmd_t is
+  function to_std_cmd(
+    idx : integer range 0 to 31) return std_logic_cmd_t is
   begin
-    return std_logic_vector(to_unsigned(number, std_logic_cmd_t'length));
-  end to_cmd;
+    return std_logic_vector(to_unsigned(idx, std_logic_cmd_t'length));
+  end to_std_cmd;
+  function to_int_cmd(
+    idx : integer range 0 to 15;
+    shd : std_logic) return std_logic_cmd_t is
+    variable cmd : std_logic_cmd_t;
+  begin
+    cmd := "1" & shd & std_logic_vector(to_unsigned(idx, std_logic_cmd_t'length - 2));
+    return cmd;
+  end to_int_cmd;
   
   function to_arg(
-    number : integer range 0 to 65535) return std_logic_arg_t is
+    val : integer range 0 to 65535) return std_logic_arg_t is
   begin
-    return std_logic_vector(to_unsigned(number, std_logic_arg_t'length));
+    return std_logic_vector(to_unsigned(val, std_logic_arg_t'length));
   end to_arg;
   
   function get_cmd_type(
