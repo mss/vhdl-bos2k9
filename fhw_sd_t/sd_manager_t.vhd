@@ -113,9 +113,14 @@ begin
     
     respond_init;
     respond(rsp_ok_c);   -- read
+    respond(rsp_ok_c);   -- seek
     respond(rsp_ok_c);   -- pipe
+    respond(rsp_ok_c);   -- skip
     respond(rsp_ok_c);   -- read
+    respond(rsp_ok_c);   -- seek
     respond(rsp_ok_c);   -- pipe
+    respond(rsp_ok_c);   -- skip
+    
     respond(rsp_err_c);  -- read
     
     wait;

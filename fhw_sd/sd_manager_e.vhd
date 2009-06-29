@@ -51,6 +51,7 @@ architecture rtl of sd_manager_e is
     loop_state_c,
     bsiz_state_c,
     read_state_c,
+    seek_state_c,
     pipe_state_c,
     skip_state_c,
     send_state_c,
@@ -80,6 +81,7 @@ begin
         when loop_state_c => curr_state_s <= next_state_s;
         when bsiz_state_c => curr_state_s <= send_state_c;
         when read_state_c => curr_state_s <= send_state_c;
+        when seek_state_c => curr_state_s <= send_state_c;
         when pipe_state_c => curr_state_s <= send_state_c;
         when skip_state_c => curr_state_s <= send_state_c;
         when send_state_c => curr_state_s <= shft_state_c;
@@ -115,6 +117,9 @@ begin
         when read_state_c =>
           command  <= cmd_read_single_block_c;
           argument <= address & pad_read_single_block_c;
+        when seek_state_c =>
+          command  <= cmd_do_seek_c;
+          argument <= arg_do_seek_c;
         when pipe_state_c =>
           command  <= cmd_do_pipe_c;
           argument <= arg_do_pipe_c;
@@ -159,7 +164,8 @@ begin
               when idle_state_c => next_state_s <= init_state_c;
               when init_state_c => next_state_s <= init_state_c;
               when bsiz_state_c => next_state_s <= wait_state_c;
-              when read_state_c => next_state_s <= pipe_state_c;
+              when read_state_c => next_state_s <= seek_state_c;
+              when seek_state_c => next_state_s <= pipe_state_c;
               when pipe_state_c => next_state_s <= skip_state_c;
               when skip_state_c => next_state_s <= wait_state_c;
               when others => null;
