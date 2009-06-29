@@ -19,7 +19,7 @@ entity sd_counter_e is
     
     rewind : in  std_logic;
     
-    top  : in  natural range 1 to max;
+    top  : in  natural range 0 to max;
     done : out std_logic);
 end sd_counter_e;
 

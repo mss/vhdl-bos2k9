@@ -34,10 +34,6 @@ entity sd_parser_e is
     
     pipe     : out std_logic;
     
-    cnt_top  : out counter_top_t;
-    cnt_tick : out std_logic;
-    cnt_done : in  std_logic;
-    
     spi_start : out std_logic;
     spi_busy  : in  std_logic;
     spi_txd   : out std_logic_byte_t;
@@ -48,6 +44,22 @@ end sd_parser_e;
 -----------------------------------------------------------------------
 
 architecture rtl of sd_parser_e is
+  component sd_counter_e is
+    generic(
+      max : positive := counter_max_c);
+    port(
+      clock  : in  std_logic;
+      enable : in  std_logic;
+    
+      rewind : in  std_logic;
+    
+      top  : in  counter_top_t;
+      done : out std_logic);
+  end component;
+  signal cnt_top_s  : counter_top_t;
+  signal cnt_tick_s : std_logic;
+  signal cnt_done_s : std_logic;
+
   type state_t is(
     idle_state_c,
     load_state_c,
@@ -72,10 +84,10 @@ begin
                    and state_s = loop_state_c
          else '0';
   
-  cnt_top  <= create_counter_top(command, argument);
-  cnt_tick <= '1' when state_s = load_state_c
-         else '1' when state_s = send_state_c
-         else '0';
+  cnt_top_s  <= create_counter_top(command, argument);
+  cnt_tick_s <= '1' when state_s = load_state_c
+           else '1' when state_s = send_state_c
+           else '0';
   
   spi_txd   <= get_frame_head(frame_s);
   spi_start <= '1' when state_s = send_state_c
@@ -90,7 +102,7 @@ begin
     if rising_edge(clock) then
       case state_s is
         when idle_state_c => done_s <= '0';
-        when shft_state_c => done_s <= done_s or cnt_done;
+        when shft_state_c => done_s <= done_s or cnt_done_s;
         when vrfy_state_c => done_s <= done_s or break_s;
         when others       => null;
       end case;
@@ -181,4 +193,11 @@ begin
       end case;
     end if;
   end process;
+  
+  counter : sd_counter_e port map(
+    clock  => clock,
+    enable => cnt_tick_s,
+    rewind => trigger,
+    top    => cnt_top_s,
+    done   => cnt_done_s);
 end rtl;

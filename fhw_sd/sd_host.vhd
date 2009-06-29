@@ -80,10 +80,6 @@ architecture rtl of sd_host is
       
       pipe     : out std_logic;
       
-      cnt_top  : out counter_top_t;
-      cnt_tick : out std_logic;
-      cnt_done : in  std_logic;
-    
       spi_start : out std_logic;
       spi_busy  : in  std_logic;
       spi_txd   : out std_logic_byte_t;
@@ -91,19 +87,6 @@ architecture rtl of sd_host is
       spi_cs    : out std_logic);
   end component;
 
-  component sd_counter_e is
-    generic(
-      max : positive := counter_max_c);
-    port(
-      clock  : in  std_logic;
-      enable : in  std_logic;
-    
-      rewind : in  std_logic;
-    
-      top  : in  counter_top_t;
-      done : out std_logic);
-  end component;
-  
   component spi_master 
     generic(
       clk_div    : positive := clock_divider;
@@ -129,10 +112,6 @@ architecture rtl of sd_host is
   signal sd_shifting_s : std_logic;
   signal sd_error_s    : std_logic;
   signal sd_idled_s    : std_logic;
-  
-  signal cnt_top_s  : counter_top_t;
-  signal cnt_tick_s : std_logic;
-  signal cnt_done_s : std_logic;
   
   signal spi_start_s : std_logic;
   signal spi_busy_s  : std_logic;
@@ -175,24 +154,11 @@ begin
     
     pipe => shd,
     
-    cnt_top  => cnt_top_s,
-    cnt_tick => cnt_tick_s,
-    cnt_done => cnt_done_s,
-    
     spi_start => spi_start_s,
     spi_busy  => spi_busy_s,
     spi_txd   => spi_txd_s,
     spi_rxd   => spi_rxd_s,
     spi_cs    => spi_cs_s);
-  
-  counter : sd_counter_e port map(
-    clock => clk,
-    enable => cnt_tick_s,
-    
-    rewind => sd_trigger_s,
-    
-    top  => cnt_top_s,
-    done => cnt_done_s);
   
   cs <= not spi_cs_s;
   spi : spi_master port map(

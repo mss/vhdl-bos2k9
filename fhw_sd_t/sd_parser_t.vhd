@@ -42,10 +42,6 @@ architecture test of sd_parser_t is
       
       pipe     : out std_logic;
       
-      cnt_top  : out counter_top_t;
-      cnt_tick : out std_logic;
-      cnt_done : in  std_logic;
-    
       spi_start : out std_logic;
       spi_busy  : in  std_logic;
       spi_txd   : out std_logic_byte_t;
@@ -65,9 +61,6 @@ architecture test of sd_parser_t is
   signal error_o_s    : std_logic;
   signal idled_o_s    : std_logic;
   signal pipe_o_s     : std_logic;
-  signal top_o_s      : counter_top_t;
-  signal tick_o_s     : std_logic;
-  signal done_i_s     : std_logic;
   signal start_o_s    : std_logic;
   signal busy_i_s     : std_logic;
   signal txd_o_s      : std_logic_byte_t;
@@ -88,9 +81,6 @@ begin
     error_o_s,
     idled_o_s,
     pipe_o_s,
-    top_o_s,
-    tick_o_s,
-    done_i_s,
     start_o_s,
     busy_i_s,
     txd_o_s,
@@ -162,7 +152,7 @@ begin
     
     wait until rising_edge(start_o_s);
     busy_i_s  <= '1';
-    while counter_s <= (top_o_s + 1) loop
+    while shifting_o_s = '1' loop
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
