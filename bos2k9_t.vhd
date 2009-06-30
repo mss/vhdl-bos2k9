@@ -13,15 +13,15 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use std.textio.all;
+use work.txt_util.all;
+
 -----------------------------------------------------------------------
 
 entity bos2k9_t is
   generic(
-    clock_interval : time := clock_interval_c;
-    clock_divider  : positive := 6;
-    txd_pattern : std_logic_byte_t := "10010110";
-    rxd_pattern : std_logic_byte_t := "LHLHLHLH";
-    repeat : natural := 1);
+    clock_interval : time   := clock_interval_c;
+    spi_filename   : string := "bos2k9_t.dat");
 end bos2k9_t;
 
 -----------------------------------------------------------------------
@@ -30,131 +30,98 @@ architecture test of bos2k9_t is
 
   component bos2k9 is
     port(
-      clk : in  std_logic;
-      rst : in  std_logic;
+      CLOCK_50 : in std_logic;
     
-      start_btn : in  std_logic;
-      busy_led  : out std_logic;
+      KEY  : in  std_logic_vector(3 downto 0);
+      SW   : in  std_logic_vector(17 downto 0);
+      LEDR : out std_logic_vector(17 downto 0);
+      LEDG : out std_logic_vector(8 downto 0);
     
-      byte_swc : in  std_logic_byte_t;
-      byte_led : out std_logic_byte_t;
-    
-      spi_miso : in  std_logic;
-      spi_mosi : out std_logic;
-      spi_sck  : out std_logic;
-      spi_cs   : out std_logic);
+      SD_DAT  : in  std_logic;
+      SD_DAT3 : out std_logic;
+      SD_CMD  : out std_logic;
+      SD_CLK  : out std_logic);
   end component;
 
-  signal test_s : integer;
+  file   spi_file : text open read_mode is spi_filename;
+  signal test_s   : integer;
   
   signal clock_s  : std_logic;
   signal reset_s  : std_logic;
   
+  signal KEY_s      : std_logic_vector(3 downto 0);
+  signal SW_s       : std_logic_vector(17 downto 0);
+  signal LEDR_s     : std_logic_vector(17 downto 0);
+  signal LEDG_s     : std_logic_vector(8 downto 0);
+  signal SD_DAT_s   : std_logic;
+  signal SD_DAT3_s  : std_logic;
+  signal SD_CMD_s   : std_logic;
+  signal SD_CLK_s   : std_logic;
+  
   signal start_n : std_logic;
-  signal busy_s  : std_logic;
   signal txd_s   : std_logic_byte_t;
   signal rxd_s   : std_logic_byte_t;
-  signal miso_s  : std_logic;
-  signal mosi_s  : std_logic;
-  signal sck_s   : std_logic;
-  signal cs_s    : std_logic;
-  
-  signal ss_n    : std_logic;
+  signal spi_s   : spi_bus_t;
   
   signal simo_s  : std_logic_byte_t;
 begin
-  dut : bos2k9 port map(
-    clk => clock_s,
-    rst => reset_s,
-    start_btn => start_n,
-    busy_led => busy_s,
-    byte_swc => txd_s,
-    byte_led => rxd_s,
-    spi_miso => miso_s,
-    spi_mosi => mosi_s,
-    spi_sck  => sck_s,
-    spi_cs   => cs_s);
+  dut : bos2k9 port map(clock_s,
+    KEY_s,
+    SW_s,
+    LEDR_s,
+    LEDG_s,
+    SD_DAT_s,
+    SD_DAT3_s,
+    SD_CMD_s,
+    SD_CLK_s);
+  SD_DAT_s   <= spi_s.miso;
+  spi_s.mosi <= SD_CMD_s;
+  spi_s.sck  <= SD_CLK_s;
+  spi_s.cs   <= SD_DAT3_s;
   
   stimulus : process
-    variable repeat_v : natural;
   begin
-    wait for clock_interval / 4;
+    
   
-    repeat_v := repeat;
-    test_s <= -3;
-    start_n <= '1';
-    txd_s   <= (others => 'U');
-    wait until falling_edge(reset_s); test_s <= test_s + 1;
     
-    wait until rising_edge(clock_s); test_s <= test_s + 1;
-    txd_s  <= txd_pattern;
-    
-    wait until rising_edge(clock_s); test_s <= test_s + 1;
-    start_n <= '0';
-    
-    wait until rising_edge(clock_s); test_s <= test_s + 1;
-    
-    wait until rising_edge(clock_s); test_s <= test_s + 1;
-    wait until rising_edge(clock_s); test_s <= test_s + 1;
-    txd_s  <= (others => 'U');
-    
-    while repeat_v > 0 loop
-      repeat_v := repeat_v - 1;
-    
-      wait until rising_edge(clock_s); test_s <= test_s + 1;
-      txd_s  <= (others => '1');
-    
-      wait until rising_edge(clock_s); test_s <= test_s + 1;
-      txd_s  <= txd_s xor txd_pattern;
-      
-      wait until falling_edge(busy_s); test_s <= test_s + 1;
-    
-      -- while busy_s = '1' loop
-        -- wait until rising_edge(clock_s);
-      -- end loop;
-      -- test_s <= test_s + 1;
-      -- start_n <= '0';
-    
-      wait until rising_edge(clock_s); test_s <= test_s + 1;
-      start_n <= '1';
-    
-      wait until rising_edge(clock_s); test_s <= test_s + 1;
-      txd_s  <= (others => 'U');
-    end loop;
-    
-    start_n <= '1';
     wait;
   end process;
   
-  ss_n <= cs_s;
-  
   slave : process
+    variable line_v  : line;
+    variable input_v : string(1 to 16);
     variable count_v : integer;
     variable index_v : integer;
     variable data_v  : std_logic_byte_t;
   begin
-    wait for clock_interval / 4;
+    rxd_s      <= (others => 'U');
+    spi_s.miso <= 'Z';
   
-    simo_s  <= (others => 'U');
-    miso_s  <= 'Z';
+    wait until falling_edge(spi_s.cs);
+    
+    readline(spi_file, line_v);
+    read(line_v, input_v);
+    rxd_s <= to_std_logic_vector(input_v(1 to 8));
+    txd_s <= to_std_logic_vector(input_v(9 to 16));
+    
     index_v := 7;
     count_v := 0;
-    wait until falling_edge(ss_n);
-    data_v := txd_s;
-    
+    wait until falling_edge(spi_s.cs);
+    data_v := rxd_s;
+    spi_s.miso <= 
     miso_s  <= rxd_pattern(index_v);
     
-    while ss_n = '0' loop
+    while spi_s.cs = '0' loop
       wait until sck_s'event or ss_n'event;
       if not (index_v = -1) then
         count_v := count_v + 1;
         -- Latch on odd edges, shift on even
         if (count_v mod 2) = 1 then
-          simo_s(0) <= mosi_s;
+          rxd_s(0) <= spi_s.mosi;
           index_v := index_v - 1;
         else
-          simo_s  <= simo_s(6 downto 0) & simo_s(7);
-          miso_s  <= rxd_pattern(index_v);
+          rxd_s      <= rxd_s(6 downto 0) & rxd_s(7);
+          spi_s.miso <= rxd_pattern(index_v);
         end if;
       end if;
     end loop;
