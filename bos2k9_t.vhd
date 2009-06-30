@@ -142,6 +142,7 @@ begin
           end if;
         end if;
       end loop;
+      test_s <= test_s + 1;
       assert txd_v = txd_s report "unexpected spi data. got: " & str(txd_v) & " expected: " & str(txd_s);
     end loop;
     wait until falling_edge(clock_s);
