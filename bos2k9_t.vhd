@@ -84,6 +84,7 @@ begin
   byte_dw_s         <= LEDR_s(7 downto 0);
   SW_s(7 downto 0)  <= addr_sw_s;
   SW_s(15 downto 8) <= byte_sw_s;
+  SW_s(17)          <= not reset_s;
   
   addr_sw_s <= (others => '0');
   byte_sw_s <= (others => '0');
