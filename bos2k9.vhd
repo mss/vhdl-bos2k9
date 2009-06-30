@@ -148,8 +148,10 @@ begin
     
     sd_start_s <= start_btn_s;
   
-    sd_address_s <= zero_block_address_c or byte_sw1_s;
-    bl_address_s <= zero_byte_address_c  or byte_sw2_s;
+    sd_address_s(std_logic_block_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
+    sd_address_s(std_logic_byte_t'range) <= byte_sw1_s;
+    bl_address_s(std_logic_byte_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
+    bl_address_s(std_logic_byte_t'range) <= byte_sw2_s;
   
     sd_io : sd_host port map(
       clk => clock_s,
