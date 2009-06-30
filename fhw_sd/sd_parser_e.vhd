@@ -97,9 +97,11 @@ begin
         else not spi_rxd(0) when command = cmd_do_seek_c
         else '0';
   
-  status : process(clock)
+  status : process(clock, reset)
   begin
-    if rising_edge(clock) then
+    if reset = '1' then
+      done_s <= '0';
+    elsif rising_edge(clock) then
       case state_s is
         when idle_state_c => done_s <= '0';
         when shft_state_c => done_s <= done_s or cnt_done_s;
@@ -109,9 +111,11 @@ begin
     end if;
   end process;
   
-  framer : process(clock)
+  framer : process(clock, reset)
   begin
-    if rising_edge(clock) then
+    if reset = '1' then
+      frame_s <= (others => '0');
+    elsif rising_edge(clock) then
       case state_s is
         when load_state_c => frame_s <= create_frame(command, argument);
         when loop_state_c => frame_s <= shift_frame(frame_s);
