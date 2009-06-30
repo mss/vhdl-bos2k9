@@ -110,6 +110,7 @@ begin
       read(line_v, input_v);
       txd_s <= to_std_logic_vector(input_v(1 to 8));
       rxd_s <= to_std_logic_vector(input_v(10 to 17));
+      wait until rising_edge(clock_s);
     end read_txd_and_rxd;
     variable count_v : integer;
     variable index_v : integer;
@@ -118,6 +119,8 @@ begin
     rxd_s <= (others => 'Z');
     txd_v := (others => 'U');
     test_s <= 0;
+    
+    spi_s.miso <= 'Z';
     
     wait until falling_edge(spi_s.cs);
     while spi_s.cs = '0' loop
