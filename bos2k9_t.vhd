@@ -118,8 +118,8 @@ begin
     rxd_s <= (others => 'Z');
     txd_v := (others => 'U');
     test_s <= 0;
-    
     spi_s.miso <= 'Z';
+    wait until falling_edge(clock_s);
     
     while true loop
       test_s <= test_s + 1;
