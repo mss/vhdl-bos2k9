@@ -87,6 +87,7 @@ begin
   SW_s(16)          <= '0';
   SW_s(17)          <= not reset_s;
   KEY_s(0)          <= not start_s;
+  KEY_s(3 downto 1) <= (others => '1');
   
   addr_sw_s <= (others => '0');
   byte_sw_s <= (others => '0');
