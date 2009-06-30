@@ -112,7 +112,6 @@ begin
       rxd_s <= to_std_logic_vector(input_v(10 to 17));
       wait until rising_edge(clock_s);
     end read_txd_and_rxd;
-    variable count_v : integer;
     variable index_v : integer;
     variable txd_v   : std_logic_byte_t;
   begin
@@ -122,30 +121,24 @@ begin
     
     spi_s.miso <= 'Z';
     
-    wait until falling_edge(spi_s.cs);
-    while spi_s.cs = '0' loop
-      index_v := 7;
-      count_v := 0;
-      read_txd_and_rxd;
-      spi_s.miso <= rxd_s(index_v);
-      while index_v > -1 loop
-        wait until spi_s.sck'event or spi_s.cs'event;
-        if not (index_v = -1) then
-          count_v := count_v + 1;
-          -- Latch on odd edges, shift on even
-          if (count_v mod 2) = 1 then
-            txd_v(0)   := spi_s.mosi;
-            index_v    := index_v - 1;
-          else
-            txd_v      := txd_v(6 downto 0) & 'U';
-            spi_s.miso <= rxd_s(index_v);
-          end if;
-        end if;
-      end loop;
+    while true loop
       test_s <= test_s + 1;
+      index_v := 7;
+      read_txd_and_rxd;
+      while true loop
+        -- Latch on odd edges, shift on even
+        spi_s.miso <= rxd_s(index_v);
+        wait until rising_edge(spi_s.sck);
+        txd_v(0) := spi_s.mosi;
+        wait until falling_edge(spi_s.sck);
+        index_v  := index_v - 1;
+        if index_v = -1 then
+          exit;
+        end if;
+        txd_v    := txd_v(6 downto 0) & 'U';
+      end loop;
       assert txd_v = txd_s report "unexpected spi data. got: " & str(txd_v) & " expected: " & str(txd_s);
     end loop;
-    wait until falling_edge(clock_s);
   end process;
   
   reset : process
