@@ -63,7 +63,9 @@ architecture test of bos2k9_t is
   signal rxd_s   : std_logic_byte_t;
   signal spi_s   : spi_bus_t;
   
-  signal simo_s  : std_logic_byte_t;
+  signal addr_sw_s : std_logic_byte_t;
+  signal byte_sw_s : std_logic_byte_t;
+  signal byte_dw_s : std_logic_byte_t;
 begin
   dut : bos2k9 port map(clock_s,
     KEY_s,
@@ -79,6 +81,13 @@ begin
   spi_s.sck  <= SD_CLK_s;
   spi_s.cs   <= SD_DAT3_s;
   
+  byte_dw_s         <= LEDR_s(7 downto 0);
+  SW_s(7 downto 0)  <= addr_sw_s;
+  SW_s(15 downto 8) <= byte_sw_s;
+  
+  addr_sw_s <= (others => '0');
+  byte_sw_s <= (others => '0');
+  
   stimulus : process
   begin
     
@@ -88,46 +97,42 @@ begin
   end process;
   
   slave : process
-    variable line_v  : line;
-    variable input_v : string(1 to 16);
+    procedure read_txd_and_rxd is
+      variable line_v  : line;
+      variable input_v : string(1 to 17);
+      variable byte_v  : std_logic_byte_t;
+    begin
+      readline(spi_file, line_v);
+      read(line_v, input_v);
+      txd_s <= to_std_logic_vector(input_v(1 to 8));
+      rxd_s <= to_std_logic_vector(input_v(10 to 17));
+    end read_txd_and_rxd;
     variable count_v : integer;
     variable index_v : integer;
-    variable data_v  : std_logic_byte_t;
+    variable txd_v   : std_logic_byte_t;
   begin
-    rxd_s      <= (others => 'U');
-    spi_s.miso <= 'Z';
-  
+    rxd_s <= (others => 'Z');
+    txd_v := (others => 'U');
     wait until falling_edge(spi_s.cs);
-    
-    readline(spi_file, line_v);
-    read(line_v, input_v);
-    rxd_s <= to_std_logic_vector(input_v(1 to 8));
-    txd_s <= to_std_logic_vector(input_v(9 to 16));
-    
     index_v := 7;
     count_v := 0;
-    wait until falling_edge(spi_s.cs);
-    data_v := rxd_s;
-    spi_s.miso <= 
-    miso_s  <= rxd_pattern(index_v);
-    
+    read_txd_and_rxd;
+    spi_s.miso <= rxd_s(index_v);
     while spi_s.cs = '0' loop
-      wait until sck_s'event or ss_n'event;
+      wait until spi_s.sck'event or spi_s.cs'event;
       if not (index_v = -1) then
         count_v := count_v + 1;
         -- Latch on odd edges, shift on even
         if (count_v mod 2) = 1 then
-          rxd_s(0) <= spi_s.mosi;
-          index_v := index_v - 1;
+          txd_v(0)   := spi_s.mosi;
+          index_v    := index_v - 1;
         else
-          rxd_s      <= rxd_s(6 downto 0) & rxd_s(7);
-          spi_s.miso <= rxd_pattern(index_v);
+          txd_v      := txd_v(6 downto 0) & 'U';
+          spi_s.miso <= rxd_s(index_v);
         end if;
       end if;
     end loop;
-    
-    assert simo_s = data_v      report "neq:txd";
-    assert rxd_s  = rxd_pattern report "neq:rxd";
+    assert txd_v = txd_s report "unexpected spi data. got: " & str(txd_v) & " expected: " & str(txd_s);
     wait until falling_edge(clock_s);
   end process;
   
