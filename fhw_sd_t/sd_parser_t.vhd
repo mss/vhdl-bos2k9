@@ -102,6 +102,7 @@ begin
       wait until rising_edge(clock_s);
       trigger_i_s  <= '0';
       wait until falling_edge(shifting_o_s);
+      wait until rising_edge(clock_s);
     end send;
   begin
     wait for clock_interval / 4;
@@ -111,7 +112,9 @@ begin
     trigger_i_s  <= '0';
     wait until falling_edge(reset_s);
     
-    -- Test internal command with argument shorter than frame size.
+    -- Test the internal command with an argument shorter than frame 
+    -- size which ignores the input and thus always runs into a 
+    -- (non-fatal) timeout.
     send(cmd_do_skip_c,
       arg_do_skip_c,
       1, x"00");
@@ -136,7 +139,9 @@ begin
     wait until rising_edge(start_o_s);
     
     while shifting_o_s = '1' loop
-      if counter_s = delay_s then
+      if start_o_s = '1' then
+        rxd_i_s <= (others => 'U');
+      elsif counter_s = delay_s then
         rxd_i_s <= data_s;
       else
         rxd_i_s <= (others => '1');
@@ -148,21 +153,31 @@ begin
   io_flow : process
   begin
     busy_i_s  <= '0';
-    counter_s <= 0;
     
     wait until rising_edge(start_o_s);
     busy_i_s  <= '1';
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+  end process;
+  
+  io_count : process
+    variable busy_v : std_logic;
+  begin
+    counter_s <= 0;
+    busy_v    := '0';
+    
+    wait until rising_edge(shifting_o_s);
     while shifting_o_s = '1' loop
-      wait until rising_edge(clock_s);
-      wait until rising_edge(clock_s);
-      wait until rising_edge(clock_s);
-      wait until rising_edge(clock_s);
-      wait until rising_edge(clock_s);
-      wait until rising_edge(clock_s);
-      wait until rising_edge(clock_s);
-      wait until rising_edge(clock_s);
-      wait until rising_edge(clock_s);
-      counter_s <= counter_s + 1;
+      if busy_i_s = '1' and not busy_i_s = busy_v then
+        counter_s <= counter_s + 1;
+      end if;
+      busy_v := busy_i_s;
       wait until rising_edge(clock_s);
     end loop;
   end process;

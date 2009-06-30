@@ -93,8 +93,8 @@ begin
   spi_start <= '1' when state_s = send_state_c
           else '0';
   
-  break_s <= spi_rxd(7) when get_cmd_type(command) = cmd_type_std_c
-        else spi_rxd(0) when command = cmd_do_seek_c
+  break_s <= not spi_rxd(7) when get_cmd_type(command) = cmd_type_std_c
+        else not spi_rxd(0) when command = cmd_do_seek_c
         else '0';
   
   status : process(clock)
@@ -140,7 +140,13 @@ begin
             error_s <= '0';
           end if;
         else
-          error_s <= '1';
+          if get_cmd_type(command) = cmd_type_std_c then
+            error_s <= '1';
+          elsif command = cmd_do_seek_c then
+            error_s <= '1';
+          else
+            error_s <= '0';
+          end if;
         end if;
       end if;
     end if;
