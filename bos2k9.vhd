@@ -111,9 +111,9 @@ begin
     6 => spi_s.mosi,
     5 => spi_s.sck,
     4 => spi_s.cs,
-    2 => error_led_s,
+    2 => busy_led_s,
     1 => ready_led_s,
-    0 => busy_led_s,
+    0 => error_led_s,
     others => '0');
   LEDR <= (
    17 => not reset_s,
