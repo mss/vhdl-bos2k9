@@ -58,7 +58,7 @@ architecture test of bos2k9_t is
   signal SD_CMD_s   : std_logic;
   signal SD_CLK_s   : std_logic;
   
-  signal start_n : std_logic;
+  signal start_s : std_logic;
   signal txd_s   : std_logic_byte_t;
   signal rxd_s   : std_logic_byte_t;
   signal spi_s   : spi_bus_t;
@@ -85,13 +85,14 @@ begin
   SW_s(7 downto 0)  <= addr_sw_s;
   SW_s(15 downto 8) <= byte_sw_s;
   SW_s(17)          <= not reset_s;
+  KEY_s(0)          <= not start_s;
   
   addr_sw_s <= (others => '0');
   byte_sw_s <= (others => '0');
   
   stimulus : process
   begin
-    
+    start_s <= '0';
   
     
     wait;
