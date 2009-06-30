@@ -49,14 +49,14 @@ architecture test of bos2k9_t is
   signal clock_s  : std_logic;
   signal reset_s  : std_logic;
   
-  signal KEY_s      : std_logic_vector(3 downto 0);
-  signal SW_s       : std_logic_vector(17 downto 0);
-  signal LEDR_s     : std_logic_vector(17 downto 0);
-  signal LEDG_s     : std_logic_vector(8 downto 0);
-  signal SD_DAT_s   : std_logic;
-  signal SD_DAT3_s  : std_logic;
-  signal SD_CMD_s   : std_logic;
-  signal SD_CLK_s   : std_logic;
+  signal KEY_i_s      : std_logic_vector(3 downto 0);
+  signal SW_i_s       : std_logic_vector(17 downto 0);
+  signal LEDR_o_s     : std_logic_vector(17 downto 0);
+  signal LEDG_o_s     : std_logic_vector(8 downto 0);
+  signal SD_DAT_i_s   : std_logic;
+  signal SD_DAT3_o_s  : std_logic;
+  signal SD_CMD_o_s   : std_logic;
+  signal SD_CLK_o_s   : std_logic;
   
   signal start_s : std_logic;
   signal txd_s   : std_logic_byte_t;
@@ -68,26 +68,26 @@ architecture test of bos2k9_t is
   signal byte_dw_s : std_logic_byte_t;
 begin
   dut : bos2k9 port map(clock_s,
-    KEY_s,
-    SW_s,
-    LEDR_s,
-    LEDG_s,
-    SD_DAT_s,
-    SD_DAT3_s,
-    SD_CMD_s,
-    SD_CLK_s);
-  SD_DAT_s   <= spi_s.miso;
-  spi_s.mosi <= SD_CMD_s;
-  spi_s.sck  <= SD_CLK_s;
-  spi_s.cs   <= SD_DAT3_s;
+    KEY_i_s,
+    SW_i_s,
+    LEDR_o_s,
+    LEDG_o_s,
+    SD_DAT_i_s,
+    SD_DAT3_o_s,
+    SD_CMD_o_s,
+    SD_CLK_o_s);
+  SD_DAT_i_s <= spi_s.miso;
+  spi_s.mosi <= SD_CMD_o_s;
+  spi_s.sck  <= SD_CLK_o_s;
+  spi_s.cs   <= SD_DAT3_o_s;
   
-  byte_dw_s         <= LEDR_s(7 downto 0);
-  SW_s(7 downto 0)  <= addr_sw_s;
-  SW_s(15 downto 8) <= byte_sw_s;
-  SW_s(16)          <= '0';
-  SW_s(17)          <= not reset_s;
-  KEY_s(0)          <= not start_s;
-  KEY_s(3 downto 1) <= (others => '1');
+  byte_dw_s           <= LEDR_o_s(7 downto 0);
+  SW_i_s(7 downto 0)  <= addr_sw_s;
+  SW_i_s(15 downto 8) <= byte_sw_s;
+  SW_i_s(16)          <= '0';
+  SW_i_s(17)          <= not reset_s;
+  KEY_i_s(0)          <= not start_s;
+  KEY_i_s(3 downto 1) <= (others => '1');
   
   addr_sw_s <= (others => '0');
   byte_sw_s <= (others => '0');
