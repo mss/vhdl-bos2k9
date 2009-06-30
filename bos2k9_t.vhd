@@ -117,26 +117,30 @@ begin
   begin
     rxd_s <= (others => 'Z');
     txd_v := (others => 'U');
+    test_s <= 0;
+    
     wait until falling_edge(spi_s.cs);
-    index_v := 7;
-    count_v := 0;
-    read_txd_and_rxd;
-    spi_s.miso <= rxd_s(index_v);
     while spi_s.cs = '0' loop
-      wait until spi_s.sck'event or spi_s.cs'event;
-      if not (index_v = -1) then
-        count_v := count_v + 1;
-        -- Latch on odd edges, shift on even
-        if (count_v mod 2) = 1 then
-          txd_v(0)   := spi_s.mosi;
-          index_v    := index_v - 1;
-        else
-          txd_v      := txd_v(6 downto 0) & 'U';
-          spi_s.miso <= rxd_s(index_v);
+      index_v := 7;
+      count_v := 0;
+      read_txd_and_rxd;
+      spi_s.miso <= rxd_s(index_v);
+      while index_v > -1 loop
+        wait until spi_s.sck'event or spi_s.cs'event;
+        if not (index_v = -1) then
+          count_v := count_v + 1;
+          -- Latch on odd edges, shift on even
+          if (count_v mod 2) = 1 then
+            txd_v(0)   := spi_s.mosi;
+            index_v    := index_v - 1;
+          else
+            txd_v      := txd_v(6 downto 0) & 'U';
+            spi_s.miso <= rxd_s(index_v);
+          end if;
         end if;
-      end if;
+      end loop;
+      assert txd_v = txd_s report "unexpected spi data. got: " & str(txd_v) & " expected: " & str(txd_s);
     end loop;
-    assert txd_v = txd_s report "unexpected spi data. got: " & str(txd_v) & " expected: " & str(txd_s);
     wait until falling_edge(clock_s);
   end process;
   
