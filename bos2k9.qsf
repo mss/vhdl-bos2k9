@@ -33,9 +33,8 @@ set_global_assignment -name FLOW_ENABLE_RTL_VIEWER ON
 set_global_assignment -name SMART_RECOMPILE ON
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY out
 set_global_assignment -name VHDL_FILE fhw_sd/sd_host.vhd -library fhw_sd
-set_global_assignment -name VHDL_FILE fhw_sd/sd_manager_e.vhd -library fhw_sd
+set_global_assignment -name VHDL_FILE fhw_sd/sd_flow_e.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_parser_e.vhd -library fhw_sd
-set_global_assignment -name VHDL_FILE fhw_sd/sd_io_e.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_counter_e.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_commands_p.vhd -library fhw_sd
 set_global_assignment -name VHDL_FILE fhw_sd/sd_globals_p.vhd -library fhw_sd
