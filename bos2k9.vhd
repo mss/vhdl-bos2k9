@@ -16,7 +16,7 @@ entity bos2k9 is
   port(
     CLOCK_50 : in std_logic;
     
-    GPIO_0 : inout std_logic_vector(35 downto 0);
+    --GPIO_0 : inout std_logic_vector(35 downto 0);
     
     KEY  : in  std_logic_vector(3 downto 0);
     SW   : in  std_logic_vector(17 downto 0);
@@ -92,9 +92,10 @@ architecture board of bos2k9 is
   
 begin
   clock_s <= CLOCK_50;
-  reset_s <= GPIO_0(15);
+  --reset_s <= GPIO_0(15);
+  reset_s <= not SW(17);
 
-  GPIO_0 <= (others => 'Z');
+  --GPIO_0 <= (others => 'Z');
   
   start_button : button port map(
     input  => KEY(0),
@@ -106,15 +107,16 @@ begin
   SD_DAT3    <= spi_s.cs;
   
   LEDG <= (
-    8 => spi_s.miso,
-    7 => spi_s.mosi,
-    6 => spi_s.sck,
-    5 => spi_s.cs,
+    7 => spi_s.miso,
+    6 => spi_s.mosi,
+    5 => spi_s.sck,
+    4 => spi_s.cs,
     2 => error_led_s,
     1 => ready_led_s,
     0 => busy_led_s,
     others => '0');
   LEDR <= (
+   17 => not reset_s,
     7 => byte_led_s(7),
     6 => byte_led_s(6),
     5 => byte_led_s(5),

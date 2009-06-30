@@ -163,6 +163,7 @@ begin
   begin
     reset_s <= '1';
     wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
     reset_s <= '0';
     wait;
   end process;
