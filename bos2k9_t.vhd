@@ -58,7 +58,10 @@ architecture test of bos2k9_t is
   signal SD_CMD_o_s   : std_logic;
   signal SD_CLK_o_s   : std_logic;
   
+  signal init_s  : std_logic;
+  signal ready_s : std_logic;
   signal start_s : std_logic;
+  signal error_s : std_logic;
   signal txd_s   : std_logic_byte_t;
   signal rxd_s   : std_logic_byte_t;
   signal spi_s   : spi_bus_t;
@@ -86,21 +89,40 @@ begin
   SW_i_s(15 downto 8) <= byte_sw_s;
   SW_i_s(16)          <= '0';
   SW_i_s(17)          <= not reset_s;
-  KEY_i_s(0)          <= not start_s;
-  KEY_i_s(3 downto 1) <= (others => '1');
+  KEY_i_s(0)          <= not init_s;
+  KEY_i_s(1)          <= not start_s;
+  KEY_i_s(3 downto 2) <= (others => '1');
+  
+  error_s <= LEDG_o_s(0);
+  ready_s <= LEDG_o_s(1);
   
   addr_sw_s <= (others => '0');
   byte_sw_s <= (others => '0');
   
   stimulus : process
   begin
+    init_s  <= '0';
     start_s <= '0';
-  
+    wait until falling_edge(reset_s);
+    
+    init_s <= '1';
+    wait until rising_edge(clock_s);
+    init_s <= '0';
+    
+    wait until rising_edge(ready_s);
+    start_s <= '1';
+    wait until rising_edge(clock_s);
+    start_s <= '0';
     
     wait;
   end process;
   
   slave : process
+    procedure read_skip_header is
+      variable line_v  : line;
+    begin
+      readline(spi_file, line_v);
+    end read_skip_header;
     procedure read_txd_and_rxd is
       variable line_v  : line;
       variable input_v : string(1 to 17);
@@ -115,6 +137,10 @@ begin
     variable index_v : integer;
     variable txd_v   : std_logic_byte_t;
   begin
+    if reset_s = '1' then
+      read_skip_header;
+    end if;
+  
     rxd_s <= (others => 'Z');
     txd_v := (others => 'U');
     test_s <= 0;
@@ -137,9 +163,23 @@ begin
         end if;
         txd_v    := txd_v(6 downto 0) & 'U';
       end loop;
+      test_s <= test_s + 1;
       assert txd_v = txd_s report "unexpected spi data. got: " & str(txd_v) & " expected: " & str(txd_s);
     end loop;
   end process;
+  
+  -- mark: process
+  -- begin
+    -- test_s <= -1;
+    -- wait until falling_edge(reset_s);
+    -- test_s <= test_s + 1;
+    -- while true loop
+      -- if (init_s or start_s) = '1' then
+        -- test_s <= test_s + 1;
+      -- end if;
+      -- wait until rising_edge(clock_s);
+    -- end loop;
+  -- end process;
   
   reset : process
   begin

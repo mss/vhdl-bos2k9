@@ -25,9 +25,6 @@ package sd_commands_p is
   constant cmd_read_single_block_c : std_logic_cmd_t := to_cmd(cmd_type_std_c, 17);
   constant pad_read_single_block_c : std_logic_vector(31 - block_address_width_c downto 0) := (others => '0');
   
-  constant cmd_do_reset_c : std_logic_cmd_t := to_cmd(cmd_type_int_c, 0);
-  constant arg_do_reset_c : std_logic_arg_t := to_arg(50); -- 1+ ms: 8 SCK (1 byte) @ 400 kHz = 2.5 us * 8 = 20 us
-  
   constant cmd_do_start_c : std_logic_cmd_t := to_cmd(cmd_type_int_c, 1);
   constant arg_do_start_c : std_logic_arg_t := to_arg(10); -- 75+ SCKs (10 byte)
   

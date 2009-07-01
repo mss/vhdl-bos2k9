@@ -45,8 +45,7 @@ architecture test of sd_parser_t is
       spi_start : out std_logic;
       spi_busy  : in  std_logic;
       spi_txd   : out std_logic_byte_t;
-      spi_rxd   : in  std_logic_byte_t;
-      spi_cs    : out std_logic);
+      spi_rxd   : in  std_logic_byte_t);
   end component;
 
   signal test_s : integer;
@@ -65,7 +64,6 @@ architecture test of sd_parser_t is
   signal busy_i_s     : std_logic;
   signal txd_o_s      : std_logic_byte_t;
   signal rxd_i_s      : std_logic_byte_t;
-  signal cs_o_s       : std_logic;
   
   constant address_c  : std_logic_block_address_t := "10101010101010101010101";
   
@@ -84,8 +82,7 @@ begin
     start_o_s,
     busy_i_s,
     txd_o_s,
-    rxd_i_s,
-    cs_o_s);
+    rxd_i_s);
   
   stimulus : process
     procedure send(

@@ -37,8 +37,7 @@ entity sd_parser_e is
     spi_start : out std_logic;
     spi_busy  : in  std_logic;
     spi_txd   : out std_logic_byte_t;
-    spi_rxd   : in  std_logic_byte_t;
-    spi_cs    : out std_logic);
+    spi_rxd   : in  std_logic_byte_t);
 end sd_parser_e;
 
 -----------------------------------------------------------------------
@@ -129,7 +128,7 @@ begin
     if reset = '1' then
       error_s <= '0';
     elsif rising_edge(clock) then
-      if state_s = loop_state_c and done_s = '1' then
+      if state_s = vrfy_state_c and (done_s or break_s) = '1' then
         if break_s = '1' then
           if get_cmd_type(command) = cmd_type_std_c then
             error_s <= spi_rxd(6)
@@ -153,24 +152,6 @@ begin
           end if;
         end if;
       end if;
-    end if;
-  end process;
-  
-  selector : process(clock, reset)
-  begin
-    if reset = '1' then
-      spi_cs <= '0';
-    elsif rising_edge(clock) then
-      case state_s is
-        when idle_state_c =>
-          spi_cs <= not error_s;
-        when load_state_c =>
-          if not command = cmd_do_reset_c then
-            spi_cs <= '1';
-          end if;
-        when others =>
-          null;
-      end case;
     end if;
   end process;
   

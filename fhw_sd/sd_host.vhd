@@ -28,8 +28,8 @@ entity sd_host is
     clk : in  std_logic;
     rst : in  std_logic;
 
+    init  : in  std_logic;
     ready : out std_logic;
-    busy  : out std_logic;
     error : out std_logic;
     
     address : in  std_logic_block_address_t;
@@ -52,18 +52,19 @@ architecture rtl of sd_host is
       clock : in std_logic;
       reset : in std_logic;
     
+      init    : in  std_logic;
+      ready   : out std_logic;
+      
       address : in std_logic_block_address_t;
       start   : in std_logic;
-      
-      ready : out std_logic;
-      busy  : out std_logic;
     
       command  : out std_logic_cmd_t;
       argument : out std_logic_arg_t;
       trigger  : out std_logic;
       shifting : in  std_logic;
       error    : in  std_logic;
-      idled    : in  std_logic);
+      idled    : in  std_logic;
+      resetted : out std_logic);
   end component;
   
   component sd_parser_e is
@@ -83,8 +84,7 @@ architecture rtl of sd_host is
       spi_start : out std_logic;
       spi_busy  : in  std_logic;
       spi_txd   : out std_logic_byte_t;
-      spi_rxd   : in  std_logic_byte_t;
-      spi_cs    : out std_logic);
+      spi_rxd   : in  std_logic_byte_t);
   end component;
 
   component spi_master 
@@ -128,18 +128,19 @@ begin
     clock => clk,
     reset => rst,
     
+    init    => init,
+    ready => ready,
+    
     address => address,
     start   => start,
-    
-    ready => ready,
-    busy  => busy,
     
     command  => sd_command_s,
     argument => sd_argument_s,
     trigger  => sd_trigger_s,
     shifting => sd_shifting_s,
     error    => sd_error_s,
-    idled    => sd_idled_s);
+    idled    => sd_idled_s,
+    resetted => spi_cs_s);
   
   parser : sd_parser_e port map(
     clock => clk,
@@ -157,10 +158,9 @@ begin
     spi_start => spi_start_s,
     spi_busy  => spi_busy_s,
     spi_txd   => spi_txd_s,
-    spi_rxd   => spi_rxd_s,
-    spi_cs    => spi_cs_s);
+    spi_rxd   => spi_rxd_s);
   
-  cs <= not spi_cs_s;
+  cs <= spi_cs_s;
   spi : spi_master port map(
     clk => clk,
     rst => rst,

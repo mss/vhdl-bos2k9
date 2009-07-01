@@ -25,18 +25,19 @@ entity sd_flow_e is
     clock : in std_logic;
     reset : in std_logic;
     
+    init    : in  std_logic;
+    ready   : out std_logic;
+    
     address : in std_logic_block_address_t;
     start   : in std_logic;
-    
-    ready : out std_logic;
-    busy  : out std_logic;
     
     command  : out std_logic_cmd_t;
     argument : out std_logic_arg_t;
     trigger  : out std_logic;
     shifting : in  std_logic;
     error    : in  std_logic;
-    idled    : in  std_logic);
+    idled    : in  std_logic;
+    resetted : out std_logic);
 end sd_flow_e;
 
 -----------------------------------------------------------------------
@@ -62,6 +63,8 @@ architecture rtl of sd_flow_e is
   signal prev_state_s : state_t;
   signal next_state_s : state_t;
 begin
+  resetted <= '1' when curr_state_s = rset_state_c
+         else '0';
   
   sequence : process(clock, reset)
   begin
@@ -69,7 +72,7 @@ begin
       curr_state_s <= rset_state_c;
     elsif rising_edge(clock) then
       case curr_state_s is
-        when rset_state_c => curr_state_s <= send_state_c;
+        when rset_state_c => curr_state_s <= next_state_s;
         when strt_state_c => curr_state_s <= send_state_c;
         when idle_state_c => curr_state_s <= send_state_c;
         when init_state_c => curr_state_s <= loop_state_c;
@@ -96,9 +99,6 @@ begin
     elsif rising_edge(clock) then
       prev_state_s <= curr_state_s;
       case curr_state_s is
-        when rset_state_c =>
-          command  <= cmd_do_reset_c;
-          argument <= arg_do_reset_c;
         when strt_state_c =>
           command  <= cmd_do_start_c;
           argument <= arg_do_start_c;
@@ -130,13 +130,16 @@ begin
   end process;
   
   ready   <= '1' when curr_state_s = wait_state_c else '0';
-  busy    <= '0' when curr_state_s = wait_state_c else '1'; -- TODO?
   trigger <= '1' when curr_state_s = send_state_c else '0';
   
   branch : process(clock)
   begin
     if rising_edge(clock) then
       case curr_state_s is
+        when rset_state_c =>
+          if init = '1' then
+            next_state_s <= strt_state_c;
+          end if;
         when send_state_c =>
           next_state_s <= shft_state_c;
         when shft_state_c =>
@@ -146,7 +149,6 @@ begin
         when vrfy_state_c =>
           if error = '0' then
             case prev_state_s is
-              when rset_state_c => next_state_s <= strt_state_c;
               when strt_state_c => next_state_s <= idle_state_c;
               when idle_state_c => next_state_s <= init_state_c;
               when init_state_c => next_state_s <= init_state_c;

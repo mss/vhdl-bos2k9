@@ -29,49 +29,52 @@ architecture test of sd_flow_t is
       clock : in std_logic;
       reset : in std_logic;
     
+      init    : in  std_logic;
+      ready   : out std_logic;
+    
       address : in std_logic_block_address_t;
       start   : in std_logic;
-      
-      ready : out std_logic;
-      busy  : out std_logic;
     
       command  : out std_logic_cmd_t;
       argument : out std_logic_arg_t;
       trigger  : out std_logic;
       shifting : in  std_logic;
       error    : in  std_logic;
-      idled    : in  std_logic);
+      idled    : in  std_logic;
+      resetted : out std_logic);
   end component;
 
   signal test_s : integer;
   
   signal clock_s  : std_logic;
   signal reset_s  : std_logic;
-  
+
+  signal init_i_s     : std_logic;
+  signal ready_o_s    : std_logic;  
   signal address_i_s  : std_logic_block_address_t;
   signal start_i_s    : std_logic;
-  signal ready_o_s    : std_logic;
-  signal busy_o_s     : std_logic;
   signal command_o_s  : std_logic_cmd_t;
   signal argument_o_s : std_logic_arg_t;
   signal trigger_o_s  : std_logic;
   signal shifting_i_s : std_logic;
   signal error_i_s    : std_logic;
   signal idled_i_s    : std_logic;
+  signal resetted_o_s : std_logic;
   
   signal response_sent_s : std_logic;
 begin
   dut : sd_flow_e port map(clock_s, reset_s,
-                       address_i_s,
-                       start_i_s,
-                       ready_o_s,
-                       busy_o_s,
-                       command_o_s,
-                       argument_o_s,
-                       trigger_o_s,
-                       shifting_i_s,
-                       error_i_s,
-                       idled_i_s);
+    init_i_s,
+    ready_o_s,
+    address_i_s,
+    start_i_s,
+    command_o_s,
+    argument_o_s,
+    trigger_o_s,
+    shifting_i_s,
+    error_i_s,
+    idled_i_s,
+    resetted_o_s);
   
   response : process
     procedure respond(
@@ -79,8 +82,8 @@ begin
       idled : std_logic) is
     begin
       wait until rising_edge(trigger_o_s);
-      error_i_s <= 'U';
-      idled_i_s <= 'U';
+      error_i_s <= '0';
+      idled_i_s <= '0';
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
       wait until rising_edge(clock_s);
@@ -97,13 +100,12 @@ begin
     end respond;
     procedure respond_init is
     begin
-      respond('0', '0');   -- rset
-      respond('0', '0');   -- strt
+      respond('0', '0'); -- strt
       respond('0', '1'); -- idle
       respond('0', '1'); -- init
       respond('0', '1'); -- init
-      respond('0', '0');   -- init
-      respond('0', '0');   -- bsiz
+      respond('0', '0'); -- init
+      respond('0', '0'); -- bsiz
     end;
   begin
     response_sent_s <= '0';
@@ -130,6 +132,20 @@ begin
              else '0' when response_sent_s = '1'
              else unaffected;
   
+  initializer : process
+  begin
+    init_i_s <= '0';
+    wait until falling_edge(reset_s);
+    
+    while true loop
+      wait until rising_edge(clock_s);
+      init_i_s <= '1';
+      wait until rising_edge(clock_s);
+      init_i_s <= '0';
+      wait until rising_edge(resetted_o_s);
+    end loop;
+  end process;
+  
   starter : process
   begin
     address_i_s <= (others => 'U');
@@ -154,8 +170,10 @@ begin
     wait until falling_edge(reset_s);
     test_s <= test_s + 1;
     while true loop
-      wait until rising_edge(start_i_s);
-      test_s <= test_s + 1;
+      if (init_i_s or start_i_s) = '1' then
+        test_s <= test_s + 1;
+      end if;
+      wait until rising_edge(clock_s);
     end loop;
   end process;
   

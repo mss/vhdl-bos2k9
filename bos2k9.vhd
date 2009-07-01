@@ -41,8 +41,8 @@ architecture board of bos2k9 is
       clk : in  std_logic;
       rst : in  std_logic;
 
+      init  : in  std_logic;
       ready : out std_logic;
-      busy  : out std_logic;
       error : out std_logic;
       
       address : in  std_logic_block_address_t;
@@ -78,10 +78,10 @@ architecture board of bos2k9 is
   signal clock_s : std_logic;
   signal reset_s : std_logic;
   
-  signal busy_led_s  : std_logic;
   signal ready_led_s : std_logic;
   signal error_led_s : std_logic;
   
+  signal init_btn_s  : std_logic;
   signal start_btn_s : std_logic;
   
   signal byte_led_s  : std_logic_vector(7 downto 0);
@@ -97,8 +97,11 @@ begin
 
   --GPIO_0 <= (others => 'Z');
   
-  start_button : button port map(
+  init_button : button port map(
     input  => KEY(0),
+    output => init_btn_s);
+  start_button : button port map(
+    input  => KEY(1),
     output => start_btn_s);
   
   spi_s.miso <= SD_DAT;
@@ -111,7 +114,6 @@ begin
     6 => spi_s.mosi,
     5 => spi_s.sck,
     4 => spi_s.cs,
-    2 => busy_led_s,
     1 => ready_led_s,
     0 => error_led_s,
     others => '0');
@@ -130,8 +132,8 @@ begin
   byte_sw2_s <= SW(15 downto 8);
   
   guts : block
+    signal sd_init_s    : std_logic;
     signal sd_ready_s   : std_logic;
-    signal sd_busy_s    : std_logic;
     signal sd_error_s   : std_logic;
     signal sd_address_s : std_logic_block_address_t;
     signal sd_start_s   : std_logic;
@@ -142,10 +144,10 @@ begin
     signal bl_address_s : std_logic_byte_address_t;
   begin
 
-    busy_led_s  <= sd_busy_s;
     ready_led_s <= sd_ready_s;
     error_led_s <= sd_error_s;
     
+    sd_init_s  <= init_btn_s;
     sd_start_s <= start_btn_s;
   
     sd_address_s(std_logic_block_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
@@ -157,8 +159,8 @@ begin
       clk => clock_s,
       rst => reset_s,
     
+      init    => sd_init_s, 
       ready   => sd_ready_s,
-      busy    => sd_busy_s,
       error   => sd_error_s,
       address => sd_address_s,
       start   => sd_start_s,
