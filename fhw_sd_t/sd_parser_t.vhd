@@ -22,7 +22,7 @@ use ieee.numeric_std.all;
 
 entity sd_parser_t is
   generic(
-    clock_interval : time := 20 us);
+    clock_interval : time := 20 ns);
 end sd_parser_t;
 
 -----------------------------------------------------------------------

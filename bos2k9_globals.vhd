@@ -6,7 +6,7 @@ use fhw_sd.sd_globals_p.all;
 
 package bos2k9_globals is
 
-  constant clock_interval_c : time   := 20 us;
+  constant clock_interval_c : time   := 20 ns;
   constant sd_clock_div_c : positive := 128; -- 390.625 kHz (max 400 kHz); exakt: 125
   
   subtype  std_logic_block_address_t is std_logic_block_address_t;

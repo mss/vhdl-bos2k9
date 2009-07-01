@@ -18,7 +18,7 @@ use ieee.numeric_std.all;
 
 entity sd_flow_t is
   generic(
-    clock_interval : time := 20 us);
+    clock_interval : time := 20 ns);
 end sd_flow_t;
 
 -----------------------------------------------------------------------
