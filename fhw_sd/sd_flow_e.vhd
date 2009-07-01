@@ -64,6 +64,8 @@ architecture rtl of sd_flow_e is
   signal next_state_s : state_t;
 begin
   resetted <= '1' when curr_state_s = rset_state_c
+         else '1' when curr_state_s = strt_state_c
+         else '1' when prev_state_s = strt_state_c
          else '0';
   
   sequence : process(clock, reset)
