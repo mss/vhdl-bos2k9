@@ -130,6 +130,7 @@ begin
     begin
       readline(spi_file, line_v);
       read(line_v, input_v);
+      print(input_v);
       txd_s <= to_std_logic_vector(input_v(1 to 8));
       rxd_s <= to_std_logic_vector(input_v(10 to 17));
       wait until rising_edge(clock_s);
@@ -137,10 +138,7 @@ begin
     variable index_v : integer;
     variable txd_v   : std_logic_byte_t;
   begin
-    if reset_s = '1' then
-      read_skip_header;
-    end if;
-  
+    read_skip_header;
     rxd_s <= (others => 'Z');
     txd_v := (others => 'U');
     test_s <= 0;
