@@ -141,7 +141,7 @@ begin
                     or spi_rxd(2)
                     or spi_rxd(1);
           elsif command = cmd_do_seek_c then
-            error_s <= spi_rxd(7);
+            error_s <= not spi_rxd(7);
           else
             error_s <= '0';
           end if;
