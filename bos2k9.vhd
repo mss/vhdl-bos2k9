@@ -71,6 +71,9 @@ architecture board of bos2k9 is
   
   component button
     port(
+      clk : in std_logic;
+      rst : in std_logic;
+      
       input  : in  std_ulogic;
       output : out std_ulogic);
   end component;
@@ -97,10 +100,10 @@ begin
 
   --GPIO_0 <= (others => 'Z');
   
-  init_button : button port map(
+  init_button : button port map(clock_s, reset_s,
     input  => KEY(0),
     output => init_btn_s);
-  start_button : button port map(
+  start_button : button port map(clock_s, reset_s,
     input  => KEY(1),
     output => start_btn_s);
   

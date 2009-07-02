@@ -66,6 +66,7 @@ architecture test of bos2k9_t is
   signal rxd_s   : std_logic_byte_t;
   signal spi_s   : spi_bus_t;
   
+  signal init_btn_s : std_logic;
   signal addr_sw_s : std_logic_byte_t;
   signal byte_sw_s : std_logic_byte_t;
   signal byte_dw_s : std_logic_byte_t;
@@ -89,7 +90,7 @@ begin
   SW_i_s(15 downto 8) <= byte_sw_s;
   SW_i_s(16)          <= '0';
   SW_i_s(17)          <= not reset_s;
-  KEY_i_s(0)          <= not init_s;
+  KEY_i_s(0)          <= not init_btn_s;
   KEY_i_s(1)          <= not start_s;
   KEY_i_s(3 downto 2) <= (others => '1');
   
@@ -164,6 +165,16 @@ begin
       test_s <= test_s + 1;
       assert txd_v = txd_s report "unexpected spi data. got: " & str(txd_v) & " expected: " & str(txd_s);
     end loop;
+  end process;
+  
+  button: process
+  begin
+    init_btn_s <= '0';
+    wait until rising_edge(init_s);
+    init_btn_s <= '1';
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
   end process;
   
   -- mark: process

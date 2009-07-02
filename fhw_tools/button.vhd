@@ -13,6 +13,9 @@ use ieee.std_logic_1164.all;
 
 entity button is
   port(
+    clk : in std_logic;
+    rst : in std_logic;
+  
     input  : in  std_ulogic;
     output : out std_ulogic);
 end button;
@@ -20,6 +23,21 @@ end button;
 -----------------------------------------------------------------------
 
 architecture inverted of button is
+  signal input_s  : std_logic;
+  signal output_s : std_logic;
 begin
-  output <= not input;
+  input_s <= not input;
+  output  <= output_s;
+  toggle : process(clk, rst)
+  begin
+    if rst = '1' then
+      output_s <= '0';
+    elsif rising_edge(clk) then
+      if output_s = input_s then
+        output_s <= '0';
+      elsif output_s = '0' then
+        output_s <= '1';
+      end if;
+    end if;
+  end process;
 end inverted;
