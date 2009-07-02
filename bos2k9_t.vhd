@@ -42,6 +42,8 @@ architecture test of bos2k9_t is
       SD_CMD  : out std_logic;
       SD_CLK  : out std_logic);
   end component;
+  
+  constant addr_sw_c : std_logic_byte_t := "01101010";
 
   file   spi_file : text open read_mode is spi_filename;
   signal test_s   : integer;
@@ -97,7 +99,7 @@ begin
   error_s <= LEDG_o_s(0);
   ready_s <= LEDG_o_s(1);
   
-  addr_sw_s <= (others => '0');
+  addr_sw_s <= addr_sw_c;
   byte_sw_s <= (others => '0');
   
   stimulus : process
