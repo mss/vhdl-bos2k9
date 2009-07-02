@@ -56,6 +56,7 @@ architecture rtl of sd_parser_e is
       done : out std_logic);
   end component;
   signal cnt_top_s  : counter_top_t;
+  signal cnt_rwnd_s : std_logic;
   signal cnt_tick_s : std_logic;
   signal cnt_done_s : std_logic;
 
@@ -84,6 +85,8 @@ begin
          else '0';
   
   cnt_top_s  <= create_counter_top(command, argument);
+  cnt_rwnd_s <= '1' when state_s = idle_state_c
+           else '0';
   cnt_tick_s <= '1' when state_s = load_state_c
            else '1' when state_s = send_state_c
            else '0';
@@ -188,7 +191,7 @@ begin
   counter : sd_counter_e port map(
     clock  => clock,
     enable => cnt_tick_s,
-    rewind => trigger,
+    rewind => cnt_rwnd_s,
     top    => cnt_top_s,
     done   => cnt_done_s);
 end rtl;

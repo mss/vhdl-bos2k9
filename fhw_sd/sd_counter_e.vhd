@@ -36,10 +36,10 @@ begin
       -- `done` must be high for a single `clock` only, even if
       -- `enable` is low.
       done <= '0';
-      if enable  = '1' then
-        if rewind = '1' then
-	  count_s <= 0;
-        elsif count_s = top then
+      if rewind = '1' then
+        count_s <= 0;
+      elsif enable  = '1' then
+        if count_s = top then
           count_s <= 0;
           done    <= '1';
         else
