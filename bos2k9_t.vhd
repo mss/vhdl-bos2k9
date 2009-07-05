@@ -2,6 +2,23 @@
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
 --
 -- Testing the top level entity.
+--
+-- SPI input data is read from the text file `bos2k9_t.dat` (or the
+-- filename specified by the generic `spi_filename`). Each line 
+-- consists of two bytes, std_logic style and separated by a single 
+-- space: The first byte is the data expected from the SPI master (ie. 
+-- the SD host), the second the reply to be sent. All following 
+-- characters on the line are ignored and can be used as a comment.
+--
+-- Of course lines are only read when data is read, not while the 
+-- system is idle.
+--
+-- If the data sent by the SD host doesn't equal the expected data,
+-- an assertion is raised. Each input and output data is printed on 
+-- stdout.
+--
+-- This test should be run about 1500 us to reach the first simulated
+-- read.  A full 512 Byte block needs about 15 ms.
 -----------------------------------------------------------------------
 
 use work.bos2k9_globals.all;
@@ -38,11 +55,14 @@ architecture test of bos2k9_t is
       LEDG : out std_logic_vector(8 downto 0);
     
       SD_DAT  : in  std_logic;
-      SD_DAT3 : out std_logic;
       SD_CMD  : out std_logic;
+      SD_DAT3 : out std_logic;
       SD_CLK  : out std_logic);
   end component;
   
+  -- These are the low eight bytes sent as the read address;
+  -- if this constant is changed, the data file has to be
+  -- modified as well.
   constant addr_sw_c : std_logic_byte_t := "01101010";
 
   file   spi_file : text open read_mode is spi_filename;
@@ -56,8 +76,8 @@ architecture test of bos2k9_t is
   signal LEDR_o_s     : std_logic_vector(17 downto 0);
   signal LEDG_o_s     : std_logic_vector(8 downto 0);
   signal SD_DAT_i_s   : std_logic;
-  signal SD_DAT3_o_s  : std_logic;
   signal SD_CMD_o_s   : std_logic;
+  signal SD_DAT3_o_s  : std_logic;
   signal SD_CLK_o_s   : std_logic;
   
   signal init_s  : std_logic;
@@ -79,14 +99,16 @@ begin
     LEDR_o_s,
     LEDG_o_s,
     SD_DAT_i_s,
-    SD_DAT3_o_s,
     SD_CMD_o_s,
+    SD_DAT3_o_s,
     SD_CLK_o_s);
   SD_DAT_i_s <= spi_s.miso;
   spi_s.mosi <= SD_CMD_o_s;
   spi_s.sck  <= SD_CLK_o_s;
   spi_s.cs   <= SD_DAT3_o_s;
   
+  -- Make sure to change these lines if the board pin assignments 
+  -- are modified.
   byte_dw_s           <= LEDR_o_s(7 downto 0);
   SW_i_s(7 downto 0)  <= addr_sw_s;
   SW_i_s(15 downto 8) <= byte_sw_s;
@@ -95,13 +117,12 @@ begin
   KEY_i_s(0)          <= not init_btn_s;
   KEY_i_s(1)          <= not start_s;
   KEY_i_s(3 downto 2) <= (others => '1');
-  
   error_s <= LEDG_o_s(0);
   ready_s <= LEDG_o_s(1);
-  
   addr_sw_s <= addr_sw_c;
   byte_sw_s <= (others => '0');
   
+  -- Send the init and the start signal.
   stimulus : process
   begin
     init_s  <= '0';
@@ -120,6 +141,8 @@ begin
     wait;
   end process;
   
+  -- Validate input and output against the data in the data file.
+  -- Uses helper routines from txt_util.
   slave : process
     procedure read_skip_header is
       variable line_v  : line;
@@ -169,6 +192,7 @@ begin
     end loop;
   end process;
   
+  -- Simulate slow fingers on the init button.
   button: process
   begin
     init_btn_s <= '0';
@@ -178,19 +202,6 @@ begin
     wait until rising_edge(clock_s);
     wait until rising_edge(clock_s);
   end process;
-  
-  -- mark: process
-  -- begin
-    -- test_s <= -1;
-    -- wait until falling_edge(reset_s);
-    -- test_s <= test_s + 1;
-    -- while true loop
-      -- if (init_s or start_s) = '1' then
-        -- test_s <= test_s + 1;
-      -- end if;
-      -- wait until rising_edge(clock_s);
-    -- end loop;
-  -- end process;
   
   reset : process
   begin

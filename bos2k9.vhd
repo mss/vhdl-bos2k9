@@ -1,3 +1,62 @@
+-----------------------------------------------------------------------
+-- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
+--
+-- The project top level entity.
+--
+-- It implements a simple test setup which can read data from an SD 
+-- card.  Blocks are read in 512 Byte blocks, so both block addresses
+-- and byte addresses (relative to the block start) can be specified.
+-- The system starts up doing nothing, an init button has to be pressed
+-- to initialize the card and afterwards the selected block can be read
+-- to an internal buffer.
+--
+-- This is designed around the DE2 evaluation board.  To simplify
+-- development, the ports of the entity are named after the file
+-- `DE2_Pin_Table.pdf`, which is part of the DE2 documentation.
+-- The PDF file was converted to a TCL file and is included in this
+-- project as `de2_pins.tcl` and can be copied to the `bos2k9.qsf`
+-- project file.  This has the side effect that Quartus will complain
+-- that some of these pins are stuck to GND or not used; these 
+-- warnings can be ignored.
+--
+-- The following pins are used:
+--  * `CLOCK_50` is the 50 MHz system clock.
+--  * `KEY` are the four push button which are low-active.
+--  * `SW` are the eighteen on-off switches.
+--  * `LEDR` are the eighteen red LEDs above the switches.
+--  * `LEDG` are the nine green LEDs; the low eight are located above
+--    the push buttons, the ninth is above the row of red LEDs.
+--  * `SD_DAT` is the SPI MISO.
+--  * `SD_CMD` is the SPI MOSI.
+--  * `SD_DAT3` is the SPI CS.
+--  * `SD_CLK` is the SPI SCK.
+--
+-- LEDG(0) should be always on and represents a powered system. The 
+-- `reset` is wired to `SW(17)`, so the switch should be off when these
+-- system is started.  Once `reset` is off (ie. the switch on), the card
+-- can be initialized (and later reset) by pressing `KEY(0)`.  Once
+-- LEDG(2) is led, the system is ready to read a block; if an error 
+-- occurs, LEDG(1) is switched on instead.
+--
+-- The low eight bits of the block address can be specified by the
+-- first eight `SW`es, ie. SW(0) to SW(7).  Only the first 256 blocks 
+-- of 4096 possible ones (on 2 GiB SD cards; SDHC is not supported) can 
+-- be read.  `KEY(1)` starts the reading of the selected block.
+--
+-- The used `button` entity ensures that even with really slow fingers,
+-- the button press is only signaled once.  As the buttons on the DE2
+-- board tend to break, this cannot be ensured but a longer press 
+-- doesn't break anything.
+--
+-- The currently via SW(8) to SW(15) selected byte is displayed on the
+-- LEDs LEDR(0) to LEDR(7).  Because only eight bit are wired, only 
+-- half the block can be displayed.  Both this and the above limitation 
+-- doesn't matter as this is a test setup only.
+--
+-- For debugging purposes, the SPI bus is also wired to the LEDs 
+-- LEDG(7) to LEDG(4). 
+-----------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -16,16 +75,14 @@ entity bos2k9 is
   port(
     CLOCK_50 : in std_logic;
     
-    --GPIO_0 : inout std_logic_vector(35 downto 0);
-    
     KEY  : in  std_logic_vector(3 downto 0);
     SW   : in  std_logic_vector(17 downto 0);
     LEDR : out std_logic_vector(17 downto 0);
     LEDG : out std_logic_vector(8 downto 0);
     
     SD_DAT  : in  std_logic;
-    SD_DAT3 : out std_logic;
     SD_CMD  : out std_logic;
+    SD_DAT3 : out std_logic;
     SD_CLK  : out std_logic);
 end bos2k9;
 
@@ -95,11 +152,8 @@ architecture board of bos2k9 is
   
 begin
   clock_s <= CLOCK_50;
-  --reset_s <= GPIO_0(15);
   reset_s <= not SW(17);
 
-  --GPIO_0 <= (others => 'Z');
-  
   init_button : button port map(clock_s, reset_s,
     input  => KEY(0),
     output => init_btn_s);

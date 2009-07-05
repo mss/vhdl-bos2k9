@@ -1,7 +1,16 @@
 -----------------------------------------------------------------------
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
 --
--- TODO
+-- This is a helper entity implementing a counter. It is driven by
+-- `clock` and and can only be reset by applying a high signal to
+-- `rewind` for at least one `clock`.
+--
+-- 
+-- While `enable` is high, it counts the number of ticks given via 
+-- `top`; the maximim is specified by the generic `max`. When that
+-- value is reached, `done` is high for exactly one
+-- `clock` (even if `enable` goes low).
+-- 
 -----------------------------------------------------------------------
 -- This entity is part of the following library:
 -- pragma library fhw_sd

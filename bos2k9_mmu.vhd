@@ -1,3 +1,20 @@
+-----------------------------------------------------------------------
+-- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
+--
+-- A simple shift register with separate read and write addresses
+-- around a single 512 Byte M5K block implemented in the
+-- MegaWizard generated entity `mf_block_ram'.
+--
+-- Input data applied to `write_data` is latched in by a high signal
+-- `write_next`.  The current `write_addr` is increased by one.
+--
+-- Output data at the current `read_addr` can be read via `read_data`.
+--
+-- Writing to and reading from the same address will result in the old 
+-- data.
+--
+-----------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -26,11 +43,9 @@ architecture rtl of bos2k9_mmu is
   component mf_block_ram is
     port(
       clock : in  std_logic;
-
       wraddress : in  std_logic_byte_address_t;
       wren      : in  std_logic;
       data      : in  std_logic_byte_t;
-      
       rdaddress : in  std_logic_byte_address_t;
       q         : out std_logic_byte_t);
   end component;
