@@ -201,6 +201,9 @@ begin
     wait until rising_edge(clock_s);
     wait until rising_edge(clock_s);
     wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
+    wait until rising_edge(clock_s);
   end process;
   
   reset : process

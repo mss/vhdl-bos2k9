@@ -1,8 +1,8 @@
 -----------------------------------------------------------------------
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
 --
--- TODO: description
-
+-- Synchronized, inverting and sticky finger resistant button.
+-- 
 -----------------------------------------------------------------------
 -- This entity is part of the following library:
 -- pragma library fhw_tools
@@ -24,20 +24,29 @@ end button;
 
 architecture inverted of button is
   signal input_s  : std_logic;
+  signal buffer_s : std_logic;
   signal output_s : std_logic;
 begin
-  input_s <= not input;
-  output  <= output_s;
-  toggle : process(clk, rst)
+  bufr : process(clk, rst)
   begin
     if rst = '1' then
-      output_s <= '0';
+      input_s <= '0';
     elsif rising_edge(clk) then
-      if output_s = input_s then
-        output_s <= '0';
-      elsif output_s = '0' then
-        output_s <= '1';
-      end if;
+      -- Buffer input against hazards.
+      input_s <= input;
     end if;
   end process;
+  togl : process(clk, rst)
+  begin
+    if rst = '1' then
+      buffer_s <= '0';
+      output_s <= '0';
+    elsif rising_edge(clk) then
+      -- Invert and remember input.
+      buffer_s <= not input_s;
+      -- No sticky fingers.
+      output_s <= not input_s and not buffer_s;
+    end if;
+  end process;
+  output <= output_s;
 end inverted;
