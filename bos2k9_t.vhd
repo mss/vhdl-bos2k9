@@ -38,6 +38,7 @@ use work.txt_util.all;
 entity bos2k9_t is
   generic(
     clock_interval : time   := clock_interval_c;
+    spi_filepath   : string := ".";
     spi_filename   : string := "bos2k9_t.dat");
 end bos2k9_t;
 
@@ -65,7 +66,7 @@ architecture test of bos2k9_t is
   -- modified as well.
   constant addr_sw_c : std_logic_byte_t := "01101010";
 
-  file   spi_file : text open read_mode is spi_filename;
+  file   spi_file : text open read_mode is spi_filepath & "/" & spi_filename;
   signal test_s   : integer;
   
   signal clock_s  : std_logic;
