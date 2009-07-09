@@ -82,6 +82,9 @@ entity bos2k9 is
     LEDR : out std_logic_vector(17 downto 0);
     LEDG : out std_logic_vector(8 downto 0);
     
+    UART_RXD : in  std_logic;
+    UART_TXD : out std_logic;
+    
     SD_DAT  : in  std_logic;
     SD_CMD  : out std_logic;
     SD_DAT3 : out std_logic;
