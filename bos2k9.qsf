@@ -49,6 +49,7 @@ set_global_assignment -name VHDL_FILE bos2k9_globals.vhd
 set_global_assignment -name VHDL_FILE bos2k9_mmu.vhd
 set_global_assignment -name QIP_FILE mf_block_ram.qip
 set_global_assignment -name VHDL_FILE bos2k9.vhd
+set_global_assignment -name MISC_FILE bos2k9.dpf
 
 # Pin & Location Assignments
 # ==========================

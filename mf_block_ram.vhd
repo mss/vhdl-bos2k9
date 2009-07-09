@@ -233,5 +233,5 @@ END SYN;
 -- Retrieval info: GEN_FILE: TYPE_NORMAL mf_block_ram_inst.vhd FALSE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL mf_block_ram_waveforms.html FALSE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL mf_block_ram_wave*.jpg FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL mf_block_ram_syn.v TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL mf_block_ram_syn.v FALSE
 -- Retrieval info: LIB_FILE: altera_mf

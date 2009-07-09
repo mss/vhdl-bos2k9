@@ -7,7 +7,6 @@ transcript
 *.qws
 *.rpt
 *.bak
-*.dpf
 *.mpf
 *.mti
 vsim.*
