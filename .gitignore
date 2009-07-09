@@ -10,3 +10,4 @@ transcript
 *.mpf
 *.mti
 vsim.*
+mgc_location_map
