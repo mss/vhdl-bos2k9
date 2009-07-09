@@ -24,6 +24,7 @@ entity rs232_send is
     
     tx  : out std_logic;
     txd : in  std_logic_vector(data_width - 1 downto 0);
+    txn : in  std_logic;
     txb : out std_logic);
  end rs232_send;
  

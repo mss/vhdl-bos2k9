@@ -24,6 +24,7 @@ entity rs232_recv is
     
     rx  : in  std_logic;
     rxd : out std_logic_vector(data_width - 1 downto 0);
+    rxn : out std_logic;
     rxb : out std_logic);
  end rs232_recv;
  

@@ -24,10 +24,12 @@ entity sd_host is
     
     tx  : out std_logic;
     txd : in  std_logic_vector(data_width - 1 downto 0);
+    txn : in  std_logic;
     txb : out std_logic;
     
     rx  : in  std_logic;
     rxd : out std_logic_vector(data_width - 1 downto 0);
+    rxn : out std_logic;
     rxb : out std_logic);
  end sd_host;
  
