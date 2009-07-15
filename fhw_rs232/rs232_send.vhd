@@ -54,9 +54,8 @@ begin
   frame_s(frame_t'high) <= '0';
   frame_s(frame_t'high - 1 downto frame_t'high - data_width) <= txd;
   frame_s(frame_t'low + 1) <= get_parity(txd, parity_type) when parity_enabled = '1'
-                         else '1';
+                         else frame_s(frame_t'low);
   frame_s(frame_t'low) <= '1';
-  
 
   sequence : process(clk, rst)
   begin
