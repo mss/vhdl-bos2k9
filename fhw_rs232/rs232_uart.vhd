@@ -14,8 +14,7 @@ use ieee.numeric_std.all;
 
 entity sd_host is
   generic(
-    clock_interval : time;
-    clock_divider  : positive; -- TODO: calculate this based on clock_interval
+    clock_divider  : positive;
     data_width     : positive := 8;
     parity_enabled : std_logic := '0';
     parity_type    : std_logic := '0');
@@ -39,7 +38,6 @@ entity sd_host is
 architecture rtl of sd_host is
   component rs232_send is
     generic(
-      clock_interval : time := clock_interval;
       clock_divider  : positive := clock_divider;
       data_width     : positive := data_width;
       parity_enabled : std_logic := parity_enabled;
@@ -54,7 +52,6 @@ architecture rtl of sd_host is
    end component;
    component rs232_recv is
     generic(
-      clock_interval : time := clock_interval;
       clock_divider  : positive := clock_divider;
       data_width     : positive := data_width;
       parity_enabled : std_logic := parity_enabled;

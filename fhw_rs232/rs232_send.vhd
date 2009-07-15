@@ -15,8 +15,7 @@ use ieee.numeric_std.all;
 
 entity rs232_send is
   generic(
-    clock_interval : time;
-    clock_divider  : positive; -- TODO: calculate this based on clock_interval
+    clock_divider  : positive;
     data_width     : positive := 8;
     parity_enabled : std_logic := '0';
     parity_type    : std_logic := '0');
