@@ -18,7 +18,7 @@ entity sd_host is
     clock_divider  : positive; -- TODO: calculate this based on clock_interval
     data_width     : positive := 8;
     parity_enabled : std_logic := '0';
-    parity         : std_logic := '0');
+    parity_type    : std_logic := '1');
   port(
     clk : in  std_logic;
     rst : in  std_logic;
@@ -43,7 +43,7 @@ architecture rtl of sd_host is
       clock_divider  : positive := clock_divider;
       data_width     : positive := data_width;
       parity_enabled : std_logic := parity_enabled;
-      parity         : std_logic := parity);
+      parity_type    : std_logic := parity_type);
     port(
       clk : in  std_logic;
       rst : in  std_logic;
@@ -58,7 +58,7 @@ architecture rtl of sd_host is
       clock_divider  : positive := clock_divider;
       data_width     : positive := data_width;
       parity_enabled : std_logic := parity_enabled;
-      parity         : std_logic := parity);
+      parity_type    : std_logic := parity_type);
     port(
       clk : in  std_logic;
       rst : in  std_logic;

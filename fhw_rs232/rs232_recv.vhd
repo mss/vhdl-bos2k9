@@ -7,6 +7,7 @@
 -- This entity is part of the following library:
 -- pragma library fhw_rs232
 library fhw_rs232;
+use fhw_rs232.rs232_globals_p.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -18,7 +19,7 @@ entity rs232_recv is
     clock_divider  : positive; -- TODO: calculate this based on clock_interval
     data_width     : positive := 8;
     parity_enabled : std_logic := '0';
-    parity         : std_logic := '0');
+    parity_type    : std_logic := '1');
   port(
     clk : in  std_logic;
     rst : in  std_logic;

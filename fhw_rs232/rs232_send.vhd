@@ -7,6 +7,7 @@
 -- This entity is part of the following library:
 -- pragma library fhw_rs232
 library fhw_rs232;
+use fhw_rs232.rs232_globals_p.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -18,7 +19,7 @@ entity rs232_send is
     clock_divider  : positive; -- TODO: calculate this based on clock_interval
     data_width     : positive := 8;
     parity_enabled : std_logic := '0';
-    parity         : std_logic := '0');
+    parity_type    : std_logic := '1');
   port(
     clk : in  std_logic;
     rst : in  std_logic;
@@ -32,7 +33,6 @@ entity rs232_send is
 -----------------------------------------------------------------------
 
 architecture rtl of rs232_send is
-  
   type state_t is (
     state_idle_c,
     state_load_c,
@@ -53,8 +53,9 @@ begin
   
   frame_s(frame_t'high) <= '0';
   frame_s(frame_t'high - 1 downto frame_t'high - 8) <= txd;
-  frame_s(frame_t'low + 1) <= parity_s;
+  frame_s(frame_t'low + 1) <= get_parity(txd, parity_type);
   frame_s(frame_t'low) <= '1';
+  
 
   sequence : process(clk, rst)
   begin
