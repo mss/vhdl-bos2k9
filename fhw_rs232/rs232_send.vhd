@@ -85,12 +85,4 @@ begin
     end if;
   end process;
   
-  parit : process(clk, rst)
-  begin
-    if parity_enabled = '0' then
-      parity_s <= '1';
-    else
-      -- TODO
-    end if;
-  end process;
 end rtl;
