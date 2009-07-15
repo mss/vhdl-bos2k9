@@ -48,6 +48,7 @@ architecture rtl of sd_host is
       
       tx  : out std_logic;
       txd : in  std_logic_vector(data_width - 1 downto 0);
+      txn : in  std_logic;
       txb : out std_logic);
    end component;
    component rs232_recv is
@@ -62,9 +63,10 @@ architecture rtl of sd_host is
       
       rx  : in  std_logic;
       rxd : out std_logic_vector(data_width - 1 downto 0);
+      rxn : out std_logic;
       rxb : out std_logic);
    end component;
 begin
-  send : rs232_send port map(clk, rst, tx, txd, txb);
-  recv : rs232_recv port map(clk, rst, rx, rxd, rxb);
+  send : rs232_send port map(clk, rst, tx, txd, txn, txb);
+  recv : rs232_recv port map(clk, rst, rx, rxd, rxn, rxb);
 end rtl;
