@@ -49,7 +49,7 @@ architecture rtl of rs232_send is
     state_wait_c);
   signal state_s : state_t;
   
-  subtype frame_t is std_logic_vector(data_width - 1 + 2 + 1 downto 0);
+  subtype frame_t is std_logic_vector((2 + data_width + 2) - 1 downto 0);
   signal frame_s : frame_t;
   signal index_s : frame_t;
   
@@ -64,7 +64,7 @@ begin
   frame_s(frame_t'high - 0) <= '1'; -- Stop
   frame_s(frame_t'high - 1) <= get_parity(txd, parity_type) when parity_enabled = '1'
                           else frame_s(frame_t'high);
-  frame_s(frame_t'high - 2 downto frame_t'high - 2 - (data_width - 1)) <= txd;
+  frame_s(frame_t'high - 2 downto frame_t'low + 2) <= txd;
   frame_s(frame_t'low + 1) <= '0'; -- Start
   frame_s(frame_t'low + 0) <= '1'; -- Idle
   
@@ -86,7 +86,8 @@ begin
     if rising_edge(clk) then
       case state_s is
         when state_idle_c =>
-          index_s <= "00000000001";
+          index_s(frame_t'low) <= '0';
+          index_s(frame_t'high downto frame_t'low + 1) <= (others => '0');
         when state_send_c =>
           index_s <= index_s(frame_t'high - 1 downto frame_t'low) & '0';
         when others =>
