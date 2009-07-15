@@ -86,7 +86,7 @@ begin
     if rising_edge(clk) then
       case state_s is
         when state_idle_c =>
-          index_s(frame_t'low) <= '0';
+          index_s(frame_t'low) <= '1';
           index_s(frame_t'high downto frame_t'low + 1) <= (others => '0');
         when state_send_c =>
           index_s <= index_s(frame_t'high - 1 downto frame_t'low) & '0';
