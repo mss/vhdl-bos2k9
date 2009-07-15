@@ -17,7 +17,8 @@ entity rs232_recv is
     clock_interval : time;
     clock_divider  : positive; -- TODO: calculate this based on clock_interval
     data_width     : positive := 8;
-    parity         : std_logic_vector(1 downto 0) := "00");
+    parity_enabled : std_logic := '0';
+    parity         : std_logic := '0');
   port(
     clk : in  std_logic;
     rst : in  std_logic;
@@ -31,8 +32,6 @@ entity rs232_recv is
 -----------------------------------------------------------------------
 
 architecture rtl of rs232_recv is
-  constant parity_enabled_c : std_logic := parity(1);
-  constant parity_c         : std_logic := parity(0);
 begin
   
 end rtl;

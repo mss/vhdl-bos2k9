@@ -17,7 +17,8 @@ entity rs232_send is
     clock_interval : time;
     clock_divider  : positive; -- TODO: calculate this based on clock_interval
     data_width     : positive := 8;
-    parity         : std_logic_vector(1 downto 0) := "00");
+    parity_enabled : std_logic := '0';
+    parity         : std_logic := '0');
   port(
     clk : in  std_logic;
     rst : in  std_logic;
@@ -31,8 +32,6 @@ entity rs232_send is
 -----------------------------------------------------------------------
 
 architecture rtl of rs232_send is
-  constant parity_enabled_c : std_logic := parity(1);
-  constant parity_c         : std_logic := parity(0);
   
   type state_t is (
     state_idle_c,
@@ -87,7 +86,7 @@ begin
   
   parit : process(clk, rst)
   begin
-    if parity_enabled_c = '0' then
+    if parity_enabled = '0' then
       parity_s <= '1';
     else
       -- TODO
