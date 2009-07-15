@@ -16,7 +16,7 @@ package rs232_globals_p is
   
   function get_parity(
     word : std_logic_vector;
-    odd  : std_logic) return std_logic;
+    even : std_logic) return std_logic;
   
 end rs232_globals_p;
 
@@ -24,15 +24,12 @@ package body rs232_globals_p is
 
   function get_parity(
     word : std_logic_vector;
-    odd  : std_logic) return std_logic is
-    variable gen_v : std_logic_vector(word'high + 1 downto word'low);
+    even : std_logic) return std_logic is
     variable par_v : std_logic;
   begin
-    gen_v(word'high + 1) := odd;
-    gen_v(word'high downto word'low) := word;
-    par_v := '0';
-    for i in gen_v'high downto gen_v'low loop
-      par_v := par_v xor gen_v(i);
+    par_v := not even;
+    for i in word'high downto word'low loop
+      par_v := par_v xor word(i);
     end loop;
     return par_v;
   end get_parity;

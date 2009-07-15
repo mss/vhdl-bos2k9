@@ -19,7 +19,7 @@ entity rs232_recv is
     clock_divider  : positive; -- TODO: calculate this based on clock_interval
     data_width     : positive := 8;
     parity_enabled : std_logic := '0';
-    parity_type    : std_logic := '1');
+    parity_type    : std_logic := '0');
   port(
     clk : in  std_logic;
     rst : in  std_logic;

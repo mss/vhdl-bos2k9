@@ -29,8 +29,8 @@ architecture test of rs232_globals_parity_t is
     variable o_p_v, o_e_v : std_logic;
   begin
     e_e_v := expect; o_e_v := not expect;
-    e_p_v := get_parity(word, '0'); assert e_p_v = e_e_v report "wrong E parity for " & str(word) & ": " & str(e_p_v) & " != " & str(e_e_v);
-    o_p_v := get_parity(word, '1'); assert o_p_v = o_e_v report "wrong O parity for " & str(word) & ": " & str(o_p_v) & " != " & str(o_e_v);
+    o_p_v := get_parity(word, '0'); assert o_p_v = o_e_v report "wrong O parity for " & str(word) & ": " & str(o_p_v) & " != " & str(o_e_v);
+    e_p_v := get_parity(word, '1'); assert e_p_v = e_e_v report "wrong E parity for " & str(word) & ": " & str(e_p_v) & " != " & str(e_e_v);
   end t;
 begin
   t("0", '0');
