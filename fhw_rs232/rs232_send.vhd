@@ -34,7 +34,7 @@ entity rs232_send is
 architecture rtl of rs232_send is
   component rs232_counter_e is
     generic(
-      count : positive := clock_divider);
+      count : positive := clock_divider - 1);
     port(
       clock  : in  std_logic;
       reset  : in  std_logic;
