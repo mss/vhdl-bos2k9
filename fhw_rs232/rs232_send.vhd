@@ -33,6 +33,17 @@ entity rs232_send is
 -----------------------------------------------------------------------
 
 architecture rtl of rs232_send is
+  component rs232_counter_e is
+    generic(
+      count : positive := clock_divider);
+    port(
+      clock  : in  std_logic;
+      reset  : in  std_logic;
+      enable : in  std_logic;
+      
+      done : out std_logic);
+  end component;
+
   type state_t is (
     state_idle_c,
     state_send_c,
@@ -43,7 +54,9 @@ architecture rtl of rs232_send is
   signal frame_s : frame_t;
   signal index_s : frame_t;
   
-  signal timer_s : std_logic;
+  signal sending_s : std_logic;
+  signal timer_s   : std_logic;
+  
   signal done_s  : std_logic;
 begin
   txb <= '0' when state_s = state_idle_c
@@ -105,4 +118,12 @@ begin
     end if;
   end process;
   
+  sending_s <= '1' when state_s = state_wait_c
+          else '0';
+  trigger : rs232_counter_e port map(
+    clock  => clk,
+    reset  => rst,
+    enable => sending_s,
+    
+    done   => timer_s);
 end rtl;
