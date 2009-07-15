@@ -23,8 +23,8 @@ end rs232_globals_parity_t;
 
 architecture test of rs232_globals_parity_t is
   procedure t(
-    word   : std_logic_vector;
-    expect : std_logic) is
+    word   : in std_logic_vector;
+    expect : in std_logic) is
     variable e_p_v, e_e_v : std_logic;
     variable o_p_v, o_e_v : std_logic;
   begin
