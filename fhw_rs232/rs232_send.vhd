@@ -61,32 +61,34 @@ begin
   txb <= '0' when state_s = state_idle_c
     else '1';
   
-  frame_s(frame_t'high) <= '1';
-  frame_s(frame_t'high - 1) <= '0';
+  frame_s(frame_t'high - 0) <= '1'; -- Stop
+  frame_s(frame_t'high - 1) <= get_parity(txd, parity_type) when parity_enabled = '1'
+                          else frame_s(frame_t'high);
   frame_s(frame_t'high - 2 downto frame_t'high - 2 - (data_width - 1)) <= txd;
-  frame_s(frame_t'low + 1) <= get_parity(txd, parity_type) when parity_enabled = '1'
-                         else frame_s(frame_t'low);
-  frame_s(frame_t'low) <= '1';
+  frame_s(frame_t'low + 1) <= '0'; -- Start
+  frame_s(frame_t'low + 0) <= '1'; -- Idle
   
-  done_s <= index_s(frame_t'low + 0) when parity_enabled = '1'
-       else index_s(frame_t'low + 1);
+  done_s <= index_s(frame_t'high - 0) when parity_enabled = '1'
+       else index_s(frame_t'high - 1);
 
-  output : process(clk)
+  output : process(frame_s, index_s)
     variable output_v : std_logic;
   begin
     output_v := '0';
-    for i in frame_t'high downto frame_t'low loop
+    for i in frame_t'range loop
       output_v := output_v or (frame_s(i) and index_s(i));
     end loop;
     tx <= output_v;
+  end process;
   
+  shifter : process(clk)
+  begin
     if rising_edge(clk) then
       case state_s is
         when state_idle_c =>
-          index_s(frame_t'high) <= '1';
-          index_s(frame_t'high - 1 downto frame_t'low) <= (others => '0');
+          index_s <= "00000000001";
         when state_send_c =>
-          index_s <= '0' & index_s(frame_t'high downto frame_t'low + 1);
+          index_s <= index_s(frame_t'high - 1 downto frame_t'low) & '0';
         when others =>
           null;
       end case;
