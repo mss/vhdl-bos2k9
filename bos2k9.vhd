@@ -177,7 +177,6 @@ architecture board of bos2k9 is
   
   signal byte_led_s  : std_logic_vector(7 downto 0);
   signal byte_sw1_s  : std_logic_vector(7 downto 0);
-  signal byte_sw2_s  : std_logic_vector(7 downto 0);
   
   signal spi_s : spi_bus_t;
   signal ser_s : ser_bus_t;
@@ -219,7 +218,6 @@ begin
     0 => byte_led_s(0),
     others => '0');
   byte_sw1_s <= SW(7 downto 0);
-  byte_sw2_s <= SW(15 downto 8);
   
   guts : block
     signal sd_init_s    : std_logic;
