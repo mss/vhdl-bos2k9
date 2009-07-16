@@ -68,8 +68,7 @@ begin
   frame_s(frame_t'low + 1) <= '0'; -- Start
   frame_s(frame_t'low + 0) <= '1'; -- Idle
   
-  done_s <= index_s(frame_t'high - 0) when parity_enabled = '1'
-       else index_s(frame_t'high - 1);
+  done_s <= index_s(frame_t'high);
 
   output : process(frame_s, index_s)
     variable output_v : std_logic;
@@ -81,18 +80,15 @@ begin
     tx <= output_v;
   end process;
   
-  shifter : process(clk)
+  shifter : process(clk, rst)
   begin
+    if rst = '1' then
+      index_s(frame_t'low) <= '0';
+      index_s(frame_t'high downto frame_t'low + 1) <= (others => '0');
     if rising_edge(clk) then
-      case state_s is
-        when state_idle_c =>
-          index_s(frame_t'low) <= '0';
-          index_s(frame_t'high downto frame_t'low + 1) <= (others => '0');
-        when state_send_c =>
-          index_s <= index_s(frame_t'high - 1 downto frame_t'low) & '0';
-        when others =>
-          null;
-      end case;
+      if state_s = state_send_c then
+        index_s <= index_s(frame_t'high - 1 downto frame_t'low) & index_s(frame_t'high);
+      end if;
     end if;
   end process;
   
