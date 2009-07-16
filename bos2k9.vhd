@@ -158,6 +158,7 @@ architecture board of bos2k9 is
   
   signal ready_led_s : std_logic;
   signal error_led_s : std_logic;
+  signal dummy_led_s : std_logic;
   
   signal init_btn_s : std_logic;
   signal read_btn_s : std_logic;
@@ -197,6 +198,7 @@ begin
     6 => spi_s.mosi,
     5 => spi_s.sck,
     4 => spi_s.cs,
+    3 => dummy_led_s,
     1 => ready_led_s,
     0 => error_led_s,
     others => '0');
@@ -236,6 +238,7 @@ begin
     
     signal ser_send_s   : std_logic;
     signal ser_data_s   : std_logic_byte_t;
+    signal ser_busy_s   : std_logic;
   begin
 
     ready_led_s <= sd_ready_s;
@@ -252,6 +255,8 @@ begin
     ser_send_s <= send_btn_s;
     
     byte_led_s <= ser_data_s;
+    
+    dummy_led_s <= ser_busy_s;
   
     sd_io : sd_host port map(
       clk => clock_s,
@@ -276,7 +281,7 @@ begin
       tx  => ser_s.tx,
       txd => ser_data_s,
       txn => ser_send_s,
-      txb => open);
+      txb => ser_busy_s);
     mmu : bos2k9_mmu port map(
       clock => clock_s,
       reset => reset_s,
