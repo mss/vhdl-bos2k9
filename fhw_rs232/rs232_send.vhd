@@ -83,7 +83,7 @@ begin
   shifter : process(clk, rst)
   begin
     if rst = '1' then
-      index_s(frame_t'low) <= '0';
+      index_s(frame_t'low) <= '1';
       index_s(frame_t'high downto frame_t'low + 1) <= (others => '0');
     if rising_edge(clk) then
       if state_s = state_send_c then
