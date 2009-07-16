@@ -12,8 +12,10 @@ use fhw_sd.sd_globals_p.all;
 
 package bos2k9_globals is
 
-  -- The DE2 board runs with 50 MHz.
-  constant clock_interval_c : time   := 20 ns;
+  -- The DE2 board runs at 50 MHz.
+  constant clock_interval_c : time    := 20 ns;
+  constant clock_1us_div_c : positive := 50;
+  constant clock_1ms_div_c : positive := clock_1us_div_c * 1000;
   
   -- The maximum initial rate for the SD card is 400 kHz, which would
   -- result in a clock divider of 125.  To be on the safe side, we'll

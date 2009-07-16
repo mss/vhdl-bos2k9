@@ -144,6 +144,17 @@ architecture board of bos2k9 is
       read_data : out std_logic_byte_t);
   end component;
   
+  component bos2k9_counter is
+    generic(
+      cnt  : positive);
+    port(
+      clk  : in  std_logic;
+      rst  : in  std_logic;
+      en   : in  std_logic;
+      clr  : in  std_logic;
+      done : out std_logic);
+  end component;
+  
   component button
     port(
       clk : in std_logic;
@@ -160,7 +171,6 @@ architecture board of bos2k9 is
   signal error_led_s : std_logic;
   signal dummy_led_s : std_logic;
   
-  signal init_btn_s : std_logic;
   signal read_btn_s : std_logic;
   signal send_btn_s : std_logic;
   
@@ -175,9 +185,6 @@ begin
   clock_s <= CLOCK_50;
   reset_s <= not SW(17);
 
-  init_button : button port map(clock_s, reset_s,
-    input  => KEY(0),
-    output => init_btn_s);
   read_button : button port map(clock_s, reset_s,
     input  => KEY(1),
     output => read_btn_s);
@@ -244,7 +251,6 @@ begin
     ready_led_s <= sd_ready_s;
     error_led_s <= sd_error_s;
     
-    sd_init_s  <= init_btn_s;
     sd_start_s <= read_btn_s;
   
     sd_address_s(std_logic_block_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
@@ -274,6 +280,13 @@ begin
       mosi  => spi_s.mosi,
       sck   => spi_s.sck,
       cs    => spi_s.cs);
+    sd_to : bos2k9_counter generic map(
+      cnt  => clock_1ms_div_c) port map(
+      clk  => clock_s,
+      rst  => reset_s,
+      en   => not sd_ready_s,
+      clr  => sd_ready_s,
+      done => sd_init_s);
     ser_io : rs232_send port map(
       clk => clock_s,
       rst => reset_s,
