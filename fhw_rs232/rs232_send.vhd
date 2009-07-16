@@ -58,7 +58,7 @@ architecture rtl of rs232_send is
   
   signal done_s  : std_logic;
 begin
-  txb <= '0' when state_s = state_idle_c
+  txb <= txn when state_s = state_idle_c
     else '1';
   
   frame_s(frame_t'high - 0) <= '1'; -- Stop
