@@ -284,7 +284,7 @@ begin
       cnt  => clock_1ms_div_c) port map(
       clk  => clock_s,
       rst  => reset_s,
-      en   => not sd_ready_s,
+      en   => '1',
       clr  => sd_ready_s,
       done => sd_init_s);
     ser_io : rs232_send port map(
