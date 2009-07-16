@@ -118,6 +118,19 @@ architecture board of bos2k9 is
       cs    : out std_logic);
   end component;
   
+  component rs232_send is
+    generic(
+      clock_divider  : positive := ser_clock_div_c);
+    port(
+      clk : in  std_logic;
+      rst : in  std_logic;
+      
+      tx  : out std_logic;
+      txd : in  std_logic_byte_t;
+      txn : in  std_logic;
+      txb : out std_logic);
+   end component;
+  
   component bos2k9_mmu is
     port(
       clock : in  std_logic;
@@ -146,14 +159,16 @@ architecture board of bos2k9 is
   signal ready_led_s : std_logic;
   signal error_led_s : std_logic;
   
-  signal init_btn_s  : std_logic;
-  signal start_btn_s : std_logic;
+  signal init_btn_s : std_logic;
+  signal read_btn_s : std_logic;
+  signal send_btn_s : std_logic;
   
   signal byte_led_s  : std_logic_vector(7 downto 0);
   signal byte_sw1_s  : std_logic_vector(7 downto 0);
   signal byte_sw2_s  : std_logic_vector(7 downto 0);
   
   signal spi_s : spi_bus_t;
+  signal ser_s : ser_bus_t;
   
 begin
   clock_s <= CLOCK_50;
@@ -162,14 +177,20 @@ begin
   init_button : button port map(clock_s, reset_s,
     input  => KEY(0),
     output => init_btn_s);
-  start_button : button port map(clock_s, reset_s,
+  read_button : button port map(clock_s, reset_s,
     input  => KEY(1),
-    output => start_btn_s);
+    output => read_btn_s);
+  send_button : button port map(clock_s, reset_s,
+    input  => KEY(2),
+    output => send_btn_s);
   
   spi_s.miso <= SD_DAT;
   SD_CMD     <= spi_s.mosi;
   SD_CLK     <= spi_s.sck;
   SD_DAT3    <= spi_s.cs;
+  
+  UART_TXD <= ser_s.tx;
+  ser_s.rx <= UART_RXD;
   
   LEDG <= (
     7 => spi_s.miso,
@@ -212,18 +233,25 @@ begin
     signal sd_shift_s   : std_logic;
   
     signal bl_address_s : std_logic_byte_address_t;
+    
+    signal ser_send_s   : std_logic;
+    signal ser_data_s   : std_logic_byte_t;
   begin
 
     ready_led_s <= sd_ready_s;
     error_led_s <= sd_error_s;
     
     sd_init_s  <= init_btn_s;
-    sd_start_s <= start_btn_s;
+    sd_start_s <= read_btn_s;
   
     sd_address_s(std_logic_block_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
     sd_address_s(std_logic_byte_t'range) <= byte_sw1_s;
     bl_address_s(std_logic_byte_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
     bl_address_s(std_logic_byte_t'range) <= byte_sw2_s;
+    
+    ser_send_s <= send_btn_s;
+    
+    byte_led_s <= ser_data_s;
   
     sd_io : sd_host port map(
       clk => clock_s,
@@ -241,6 +269,14 @@ begin
       mosi  => spi_s.mosi,
       sck   => spi_s.sck,
       cs    => spi_s.cs);
+    ser_io : rs232_send port map(
+      clk => clock_s,
+      rst => reset_s,
+      
+      tx  => ser_s.tx,
+      txd => ser_data_s,
+      txn => ser_send_s,
+      txb => open);
     mmu : bos2k9_mmu port map(
       clock => clock_s,
       reset => reset_s,
@@ -248,7 +284,6 @@ begin
       write_addr => open,
       write_data => sd_data_s,
       read_addr  => bl_address_s,
-      read_data  => byte_led_s);
-  
+      read_data  => ser_data_s);
   end block;
 end board;
