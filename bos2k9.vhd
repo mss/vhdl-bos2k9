@@ -49,7 +49,7 @@
 -- doesn't break anything.
 --
 -- The currently via SW(8) to SW(15) selected byte is displayed on the
--- LEDs LEDR(0) to LEDR(7) and inverted on LEDR(8) to LEDR(15).
+-- LEDs LEDR(0) to LEDR(7).
 --
 -- Because only eight address bits are wired, only half the block can 
 -- be displayed.  Both this and the above limitation doesn't matter as 
@@ -209,14 +209,6 @@ begin
     others => '0');
   LEDR <= (
    17 => not reset_s,
-   15 => not byte_led_s(7),
-   14 => not byte_led_s(6),
-   13 => not byte_led_s(5),
-   12 => not byte_led_s(4),
-   11 => not byte_led_s(3),
-   10 => not byte_led_s(2),
-    9 => not byte_led_s(1),
-    8 => not byte_led_s(0),
     7 => byte_led_s(7),
     6 => byte_led_s(6),
     5 => byte_led_s(5),
