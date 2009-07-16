@@ -61,6 +61,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library fhw_sd;
 use fhw_sd.sd_host;
@@ -120,7 +121,8 @@ architecture board of bos2k9 is
   
   component rs232_send is
     generic(
-      clock_divider  : positive := ser_clock_div_c);
+      clock_divider  : positive := ser_clock_div_c;
+      parity_enabled : std_logic := '1');
     port(
       clk : in  std_logic;
       rst : in  std_logic;
@@ -172,7 +174,6 @@ architecture board of bos2k9 is
   signal dummy_led_s : std_logic;
   
   signal read_btn_s : std_logic;
-  signal send_btn_s : std_logic;
   
   signal byte_led_s  : std_logic_vector(7 downto 0);
   signal byte_sw1_s  : std_logic_vector(7 downto 0);
@@ -188,9 +189,6 @@ begin
   read_button : button port map(clock_s, reset_s,
     input  => KEY(1),
     output => read_btn_s);
-  send_button : button port map(clock_s, reset_s,
-    input  => KEY(2),
-    output => send_btn_s);
   
   spi_s.miso <= SD_DAT;
   SD_CMD     <= spi_s.mosi;
@@ -240,29 +238,110 @@ begin
     signal sd_data_s    : std_logic_byte_t;
     signal sd_latch_s   : std_logic;
     signal sd_shift_s   : std_logic;
-  
-    signal bl_address_s : std_logic_byte_address_t;
     
     signal ser_send_s   : std_logic;
     signal ser_data_s   : std_logic_byte_t;
     signal ser_busy_s   : std_logic;
+    
+    signal r_address_s    : std_logic_byte_address_t;
+    signal r_address_lo_s : std_logic;
+    signal r_address_hi_s : std_logic;
+    signal w_address_s    : std_logic_byte_address_t;
+    signal w_address_lo_s : std_logic;
+    signal w_address_hi_s : std_logic;
+    
+    signal start_s : std_logic;
+    signal shift_s : std_logic;
+    signal write_s : std_logic;
   begin
 
     ready_led_s <= sd_ready_s;
     error_led_s <= sd_error_s;
+    dummy_led_s <= write_s;
+    byte_led_s  <= ser_data_s;
     
-    sd_start_s <= read_btn_s;
-  
     sd_address_s(std_logic_block_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
     sd_address_s(std_logic_byte_t'range) <= byte_sw1_s;
-    bl_address_s(std_logic_byte_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
-    bl_address_s(std_logic_byte_t'range) <= byte_sw2_s;
     
-    ser_send_s <= send_btn_s;
+    sd_start_s <= read_btn_s and not write_s;
     
-    byte_led_s <= ser_data_s;
+    -------------------------------------------------------------------
     
-    dummy_led_s <= ser_busy_s;
+    write_s <= start_s or not r_address_lo_s;
+    
+    starter : process(clock_s, reset_s)
+    begin
+      if reset_s = '1' then
+        start_s <= '0';
+      elsif rising_edge(clock_s) then
+        if write_s = '0' then
+          start_s <= not w_address_lo_s;
+        else
+          start_s <= r_address_lo_s;
+        end if;
+      end if;
+    end process;
+    
+    ser_send_s <= write_s and not shift_s;
+    
+    shifter : process(clock_s, reset_s)
+    begin
+      if reset_s = '1' then
+        shift_s <= '0';
+      elsif rising_edge(clock_s) then
+        shift_s <= write_s and not ser_busy_s and not start_s;
+      end if;
+    end process;
+    
+    trigger : process(clock_s, reset_s)
+    begin
+      if reset_s = '1' then
+        
+      elsif rising_edge(clock_s) then
+        
+      end if;
+    end process;
+    
+    addresser : process(clock_s, reset_s)
+    begin
+      if reset_s = '1' then
+        r_address_s <= (others => '0');
+      elsif rising_edge(clock_s) then
+        if shift_s = '1' then
+          r_address_s <= std_logic_vector(unsigned(r_address_s) + 1);
+        end if;
+      end if;
+    end process;
+      
+      
+        if (write_s and not ser_busy_s and not start_s and not shift_s) = '1' then
+          
+          shift_s <= '1';
+        end if;
+      end if;
+    end process;
+    
+    address_net : process(r_address_s, w_address_s)
+      variable r_address_lo_v : std_logic;
+      variable r_address_hi_v : std_logic;
+      variable w_address_lo_v : std_logic;
+      variable w_address_hi_v : std_logic;
+    begin
+      r_address_lo_v := '1';
+      r_address_hi_v := '1';
+      w_address_lo_v := '1';
+      r_address_hi_v := '1';
+      for i in std_logic_byte_address_t'range loop
+        r_address_lo_v := r_address_lo_v and not r_address_s(i);
+        r_address_hi_v := r_address_hi_v and     r_address_s(i);
+        w_address_lo_v := w_address_lo_v and not w_address_s(i);
+        r_address_hi_v := r_address_hi_v and     w_address_s(i);
+      end loop;
+      r_address_lo_s <= r_address_lo_v;
+      r_address_hi_s <= r_address_hi_v;
+      w_address_lo_s <= w_address_lo_v;
+      r_address_hi_s <= r_address_hi_v;
+    end process;
   
     sd_io : sd_host port map(
       clk => clock_s,
@@ -281,7 +360,7 @@ begin
       sck   => spi_s.sck,
       cs    => spi_s.cs);
     sd_to : bos2k9_counter generic map(
-      cnt  => clock_1ms_div_c) port map(
+      cnt  => init_ticks_c) port map(
       clk  => clock_s,
       rst  => reset_s,
       en   => '1',
@@ -299,9 +378,9 @@ begin
       clock => clock_s,
       reset => reset_s,
       write_next => sd_latch_s,
-      write_addr => open,
+      write_addr => w_address_s,
       write_data => sd_data_s,
-      read_addr  => bl_address_s,
+      read_addr  => r_address_s,
       read_data  => ser_data_s);
   end block;
 end board;
