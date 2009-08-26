@@ -58,48 +58,73 @@ architecture rtl of bos2k9_pump is
       read_addr : in  std_logic_byte_address_t;
       read_data : out std_logic_byte_t);
   end component;
+  
+  type state_t is(
+    idle_state_c,
+    send_state_c,
+    wait_state_c,
+    next_state_c);
+  signal state_s : state_t;
 
-  signal busy_s : std_logic;
+  signal done_s : std_logic;
   
   signal sout_s : std_logic_byte_t;
   signal strg_s : std_logic;
   signal sbsy_s : std_logic;
 
-  signal iaddr_s : std_logic_byte_address_t;
-  signal inull_s : std_logic;
-  signal oaddr_s : std_logic_byte_address_t;
-  signal onull_s : std_logic;
+  signal addr_s : std_logic_byte_address_t;
 begin
+  txb <= txn when state_s = idle_state_c
+    else '1';
+    
+  strg_s <= '1' when state_s = send_state_c
+       else '0';
 
-  txb <= busy_s;
-
-  
-  
-  busy_sync : process(clock, reset)
+  sequence : process(clock, reset)
   begin
     if reset = '1' then
-      busy_s <= '0';
+      state_s <= idle_state_c;
     elsif rising_edge(clock) then
-      -- Hold busy line until all data was shifted out.
-      -- Assumption:  foo
-      busy_s <= txn
-             or sbsy_s
-             or (not onull_s and not inull_s);
+      case state_s is
+        when idle_state_c =>
+          if txn = '1' then
+            state_s <= send_state_c;
+          end if;
+        when send_state_c =>
+          state_s <= wait_state_c;
+        when wait_state_c =>
+          if sbsy_s = '0' then
+            state_s <= next_state_c;
+          end if;
+        when next_state_c =>
+          if done_s = '1' then
+            state_s <= send_state_c;
+          else
+            state_s <= idle_state_c;
+          end if;
+      end case;
+    end if;
+  end process;
+  
+  pointer : process(clock, reset)
+  begin
+    if reset = '1' then
+      addr_s <= (others => '0');
+    elsif rising_edge(clock) then
+      if state_s = next_state_c then
+        addr_s <= std_logic_vector(unsigned(addr_s) + 1);
+      end if;
     end if;
   end process;
 
-  null_net : process(iaddr_s, oaddr_s)
-    variable inull_v : std_logic;
-    variable onull_v : std_logic;
+  done_net : process(addr_s)
+    variable done_v : std_logic;
   begin
-    inull_v := '1';
-    onull_v := '1';
+    done_v := '1';
     for i in std_logic_byte_address_t'range loop
-      inull_v := inull_v and not iaddr_s(i);
-      onull_v := onull_v and not oaddr_s(i);
+      done_v := done_v and addr_s(i);
     end loop;
-    inull_s <= inull_v;
-    onull_s <= onull_v;
+    done_s <= done_v;
   end process;
   
   ser_io : rs232_send port map(
@@ -114,8 +139,8 @@ begin
     clock => clock,
     reset => reset,
     write_next => txn,
-    write_addr => iaddr_s,
+    write_addr => open,
     write_data => txd,
-    read_addr  => oaddr_s,
+    read_addr  => addr_s,
     read_data  => sout_s);
 end rtl;
