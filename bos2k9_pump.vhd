@@ -66,17 +66,24 @@ architecture rtl of bos2k9_pump is
     next_state_c);
   signal state_s : state_t;
 
+  signal busy_s : std_logic;
   signal done_s : std_logic;
+  
+  signal otrg_s : std_logic;
   
   signal sout_s : std_logic_byte_t;
   signal strg_s : std_logic;
   signal sbsy_s : std_logic;
 
-  signal addr_s : std_logic_byte_address_t;
+  signal iadr_s : std_logic_byte_address_t;
+  signal oadr_s : std_logic_byte_address_t;
 begin
-  txb <= txn when state_s = idle_state_c
-    else '1';
-    
+  -- We're busy as soon as the state machine goes off.
+  txb <= busy_s or txn;
+  
+  -- Just to be sure, wait until the second byte was read.
+  otrg_s <= iadr_s(1);
+  
   strg_s <= '1' when state_s = send_state_c
        else '0';
 
@@ -87,7 +94,7 @@ begin
     elsif rising_edge(clock) then
       case state_s is
         when idle_state_c =>
-          if txn = '1' then
+          if otrg_s = '1' then
             state_s <= send_state_c;
           end if;
         when send_state_c =>
@@ -109,20 +116,33 @@ begin
   pointer : process(clock, reset)
   begin
     if reset = '1' then
-      addr_s <= (others => '0');
+      oadr_s <= (others => '0');
     elsif rising_edge(clock) then
       if state_s = next_state_c then
-        addr_s <= std_logic_vector(unsigned(addr_s) + 1);
+        oadr_s <= std_logic_vector(unsigned(oadr_s) + 1);
+      end if;
+    end if;
+  end process;
+  
+  busy_ff : process(clock, reset)
+  begin
+    if reset = '1' then
+      busy_s <= '0';
+    elsif rising_edge(clock) then
+      if busy_s = '0' then
+        busy_s <= txn;
+      elsif state_s = next_state_c then
+        busy_s <= not done_s;
       end if;
     end if;
   end process;
 
-  done_net : process(addr_s)
+  done_net : process(oadr_s)
     variable done_v : std_logic;
   begin
     done_v := '1';
     for i in std_logic_byte_address_t'range loop
-      done_v := done_v and addr_s(i);
+      done_v := done_v and oadr_s(i);
     end loop;
     done_s <= done_v;
   end process;
@@ -139,8 +159,8 @@ begin
     clock => clock,
     reset => reset,
     write_next => txn,
-    write_addr => open,
+    write_addr => iadr_s,
     write_data => txd,
-    read_addr  => addr_s,
+    read_addr  => oadr_s,
     read_data  => sout_s);
 end rtl;
