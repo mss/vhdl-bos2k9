@@ -138,11 +138,10 @@ architecture board of bos2k9 is
       clock : in  std_logic;
       reset : in  std_logic;
     
-      busy  : out std_logic;
-    
       txn : in  std_logic;
       txd : in  std_logic_byte_t;
-      tx : out std_logic);
+      txb : out std_logic;
+      tx  : out std_logic);
   end component;
   
   component button
@@ -231,7 +230,7 @@ begin
     sd_address_s(std_logic_block_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
     sd_address_s(std_logic_byte_t'range) <= byte_sw1_s;
     
-    sd_start_s <= read_btn_s and not pumping_s;
+    sd_start_s <= read_btn_s and sd_ready_s and not pumping_s;
   
     sd_io : sd_host port map(
       clk => clock_s,
@@ -261,10 +260,9 @@ begin
       clock => clock_s,
       reset => reset_s,
       
-      busy  => pumping_s,
-      
       txd   => sd_data_s,
       txn   => sd_latch_s,
+      txb   => pumping_s,
       tx    => ser_s.tx);
   end block;
 end board;
