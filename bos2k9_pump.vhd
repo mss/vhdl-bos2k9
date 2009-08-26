@@ -1,7 +1,8 @@
 -----------------------------------------------------------------------
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
 --
--- TODO
+-- This entity is a drop-in replacement for `fhw_rs232.rs232_send`
+-- which sends out 512 Bytes (buffered internally) at once.
 --
 -----------------------------------------------------------------------
 
@@ -72,7 +73,9 @@ begin
 
   txb <= busy_s;
 
-  busyman : process(clock, reset)
+  
+  
+  busy_sync : process(clock, reset)
   begin
     if reset = '1' then
       busy_s <= '0';
