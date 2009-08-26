@@ -304,12 +304,12 @@ begin
     end process;
       
       
-        if (write_s and not ser_busy_s and not start_s and not shift_s) = '1' then
-          
-          shift_s <= '1';
-        end if;
-      end if;
-    end process;
+--        if (write_s and not ser_busy_s and not start_s and not shift_s) = '1' then
+--          
+--          shift_s <= '1';
+--        end if;
+--      end if;
+--    end process;
     
     address_net : process(r_address_s, w_address_s)
       variable r_address_lo_v : std_logic;
