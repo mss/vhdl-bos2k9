@@ -133,7 +133,8 @@ architecture board of bos2k9 is
   component bos2k9_pump is
     generic(
       clock_divider  : positive  := ser_clock_div_c;
-      parity_enabled : std_logic := '1');
+      parity_enabled : std_logic := ser_parity_enabled_c;
+      parity_type    : std_logic := ser_even_parity_c);
     port(
       clock : in  std_logic;
       reset : in  std_logic;

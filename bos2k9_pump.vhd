@@ -18,7 +18,8 @@ use work.bos2k9_globals.all;
 entity bos2k9_pump is
   generic(
     clock_divider  : positive;
-    parity_enabled : std_logic := '1');
+    parity_enabled : std_logic := '1';
+    parity_type    : std_logic := '0');
   port(
     clock : in  std_logic;
     reset : in  std_logic;
@@ -32,10 +33,11 @@ end bos2k9_pump;
 -----------------------------------------------------------------------
 
 architecture rtl of bos2k9_pump is
-     component rs232_send is
+    component rs232_send is
     generic(
       clock_divider  : positive  := clock_divider;
-      parity_enabled : std_logic := parity_enabled);
+      parity_enabled : std_logic := parity_enabled;
+      parity_type    : std_logic := parity_type);
     port(
       clk : in  std_logic;
       rst : in  std_logic;
@@ -82,6 +84,7 @@ begin
   txb <= busy_s or txn;
   
   -- Just to be sure, wait until the second byte was read.
+  --otrg_s <= txn;
   otrg_s <= iadr_s(1);
   
   strg_s <= '1' when state_s = send_state_c
