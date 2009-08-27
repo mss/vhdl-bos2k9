@@ -100,23 +100,26 @@ begin
     txd_8n1_o_s <= (others => '-');
     txd_8o1_o_s <= (others => '-');
     txd_8e1_o_s <= (others => '-');
-    wait until rising_edge(busy_s);
+    wait until falling_edge(tx_8n1_o_s);
     txd_8n1_o_s <= (others => 'U');
     txd_8o1_o_s <= (others => 'U');
     txd_8e1_o_s <= (others => 'U');
-    wait until falling_edge(tx_8n1_o_s);
+    for i in div_c downto 1 loop
+      wait until rising_edge(clock_s);
+    end loop;
     for i in 0 to 7 loop
-      for t in div_c downto 1 loop
-        wait until rising_edge(clock_s);
-      end loop;
       txd_8n1_o_s(i) <= tx_8n1_o_s;
       txd_8o1_o_s(i) <= tx_8o1_o_s;
       txd_8e1_o_s(i) <= tx_8e1_o_s;
+      for t in div_c downto 1 loop
+        wait until rising_edge(clock_s);
+      end loop;
+
       wait until rising_edge(clock_s);
     end loop;
-    assert txd_8n1_o_s = txd_8n1_i_s report "data mismatch 8n1: " & str(txd_8n1_o_s) & " vs. " & str(txd_8n1_i_s);
-    assert txd_8o1_o_s = txd_8n1_i_s report "data mismatch 8o1: " & str(txd_8o1_o_s) & " vs. " & str(txd_8o1_i_s);
-    assert txd_8e1_o_s = txd_8n1_i_s report "data mismatch 8e1: " & str(txd_8e1_o_s) & " vs. " & str(txd_8e1_i_s);
+    assert txd_8n1_o_s = txd_8n1_i_s report "data mismatch 8n1: got: " & str(txd_8n1_o_s) & " exp: " & str(txd_8n1_i_s);
+    assert txd_8o1_o_s = txd_8n1_i_s report "data mismatch 8o1: got: " & str(txd_8o1_o_s) & " exp: " & str(txd_8o1_i_s);
+    assert txd_8e1_o_s = txd_8n1_i_s report "data mismatch 8e1: got: " & str(txd_8e1_o_s) & " exp: " & str(txd_8e1_i_s);
   end process;
   
   reset : process
