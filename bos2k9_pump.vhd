@@ -107,7 +107,7 @@ begin
             state_s <= next_state_c;
           end if;
         when next_state_c =>
-          if done_s = '1' then
+          if done_s = '0' then
             state_s <= send_state_c;
           else
             state_s <= idle_state_c;
