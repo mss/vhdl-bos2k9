@@ -119,33 +119,6 @@ architecture board of bos2k9 is
       cs    : out std_logic);
   end component;
   
-  component rs232_send is
-    generic(
-      clock_divider  : positive := ser_clock_div_c;
-      parity_enabled : std_logic := '1');
-    port(
-      clk : in  std_logic;
-      rst : in  std_logic;
-      
-      tx  : out std_logic;
-      txd : in  std_logic_byte_t;
-      txn : in  std_logic;
-      txb : out std_logic);
-   end component;
-  
-  component bos2k9_mmu is
-    port(
-      clock : in  std_logic;
-      reset : in  std_logic;
-    
-      write_next : in  std_logic;
-      write_addr : out std_logic_byte_address_t;
-      write_data : in  std_logic_byte_t;
-    
-      read_addr : in  std_logic_byte_address_t;
-      read_data : out std_logic_byte_t);
-  end component;
-  
   component bos2k9_counter is
     generic(
       cnt  : positive);
@@ -155,6 +128,20 @@ architecture board of bos2k9 is
       en   : in  std_logic;
       clr  : in  std_logic;
       done : out std_logic);
+  end component;
+  
+  component bos2k9_pump is
+    generic(
+      clock_divider  : positive  := ser_clock_div_c;
+      parity_enabled : std_logic := '1');
+    port(
+      clock : in  std_logic;
+      reset : in  std_logic;
+    
+      txn : in  std_logic;
+      txd : in  std_logic_byte_t;
+      txb : out std_logic;
+      tx  : out std_logic);
   end component;
   
   component button
@@ -220,6 +207,7 @@ begin
   byte_sw1_s <= SW(7 downto 0);
   
   guts : block
+    -- SD interface.
     signal sd_init_s    : std_logic;
     signal sd_ready_s   : std_logic;
     signal sd_error_s   : std_logic;
@@ -229,109 +217,20 @@ begin
     signal sd_latch_s   : std_logic;
     signal sd_shift_s   : std_logic;
     
-    signal ser_send_s   : std_logic;
-    signal ser_data_s   : std_logic_byte_t;
-    signal ser_busy_s   : std_logic;
-    
-    signal r_address_s    : std_logic_byte_address_t;
-    signal r_address_lo_s : std_logic;
-    signal r_address_hi_s : std_logic;
-    signal w_address_s    : std_logic_byte_address_t;
-    signal w_address_lo_s : std_logic;
-    signal w_address_hi_s : std_logic;
-    
-    signal start_s : std_logic;
-    signal shift_s : std_logic;
-    signal write_s : std_logic;
+    signal pumping_s    : std_logic;
   begin
 
+    -- Map the board outputs.
     ready_led_s <= sd_ready_s;
     error_led_s <= sd_error_s;
-    dummy_led_s <= write_s;
-    byte_led_s  <= ser_data_s;
+    dummy_led_s <= pumping_s;
+    byte_led_s  <= (others => '0');
     
+    -- We can address the first 256 blocks only.
     sd_address_s(std_logic_block_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
     sd_address_s(std_logic_byte_t'range) <= byte_sw1_s;
     
-    sd_start_s <= read_btn_s and not write_s;
-    
-    -------------------------------------------------------------------
-    
-    write_s <= start_s or not r_address_lo_s;
-    
-    starter : process(clock_s, reset_s)
-    begin
-      if reset_s = '1' then
-        start_s <= '0';
-      elsif rising_edge(clock_s) then
-        if write_s = '0' then
-          start_s <= not w_address_lo_s;
-        else
-          start_s <= r_address_lo_s;
-        end if;
-      end if;
-    end process;
-    
-    ser_send_s <= write_s and not shift_s;
-    
-    shifter : process(clock_s, reset_s)
-    begin
-      if reset_s = '1' then
-        shift_s <= '0';
-      elsif rising_edge(clock_s) then
-        shift_s <= write_s and not ser_busy_s and not start_s;
-      end if;
-    end process;
-    
-    trigger : process(clock_s, reset_s)
-    begin
-      if reset_s = '1' then
-        
-      elsif rising_edge(clock_s) then
-        
-      end if;
-    end process;
-    
-    addresser : process(clock_s, reset_s)
-    begin
-      if reset_s = '1' then
-        r_address_s <= (others => '0');
-      elsif rising_edge(clock_s) then
-        if shift_s = '1' then
-          r_address_s <= std_logic_vector(unsigned(r_address_s) + 1);
-        end if;
-      end if;
-    end process;
-      
-      
-        if (write_s and not ser_busy_s and not start_s and not shift_s) = '1' then
-          
-          shift_s <= '1';
-        end if;
-      end if;
-    end process;
-    
-    address_net : process(r_address_s, w_address_s)
-      variable r_address_lo_v : std_logic;
-      variable r_address_hi_v : std_logic;
-      variable w_address_lo_v : std_logic;
-      variable w_address_hi_v : std_logic;
-    begin
-      r_address_lo_v := '1';
-      r_address_hi_v := '1';
-      w_address_lo_v := '1';
-      r_address_hi_v := '1';
-      for i in std_logic_byte_address_t'range loop
-        r_address_lo_v := r_address_lo_v and not r_address_s(i);
-        r_address_hi_v := r_address_hi_v and     r_address_s(i);
-        w_address_lo_v := w_address_lo_v and not w_address_s(i);
-        r_address_hi_v := r_address_hi_v and     w_address_s(i);
-      end loop;
-      r_address_lo_s <= r_address_lo_v;
-      r_address_hi_s <= r_address_hi_v;
-      w_address_lo_s <= w_address_lo_v;
-      r_address_hi_s <= r_address_hi_v;
-    end process;
+    sd_start_s <= read_btn_s and sd_ready_s and not pumping_s;
   
     sd_io : sd_host port map(
       clk => clock_s,
@@ -356,21 +255,14 @@ begin
       en   => '1',
       clr  => sd_ready_s,
       done => sd_init_s);
-    ser_io : rs232_send port map(
-      clk => clock_s,
-      rst => reset_s,
-      
-      tx  => ser_s.tx,
-      txd => ser_data_s,
-      txn => ser_send_s,
-      txb => ser_busy_s);
-    mmu : bos2k9_mmu port map(
+    
+    pump : bos2k9_pump port map(
       clock => clock_s,
       reset => reset_s,
-      write_next => sd_latch_s,
-      write_addr => w_address_s,
-      write_data => sd_data_s,
-      read_addr  => r_address_s,
-      read_data  => ser_data_s);
+      
+      txd   => sd_data_s,
+      txn   => sd_latch_s,
+      txb   => pumping_s,
+      tx    => ser_s.tx);
   end block;
 end board;

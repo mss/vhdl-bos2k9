@@ -44,9 +44,9 @@ architecture rtl of rs232_send is
   end component;
 
   type state_t is (
-    state_idle_c,
-    state_send_c,
-    state_wait_c);
+    idle_state_c,
+    send_state_c,
+    wait_state_c);
   signal state_s : state_t;
   
   subtype frame_t is std_logic_vector((2 + data_width + 2) - 1 downto 0);
@@ -58,7 +58,7 @@ architecture rtl of rs232_send is
   
   signal done_s  : std_logic;
 begin
-  txb <= txn when state_s = state_idle_c
+  txb <= txn when state_s = idle_state_c
     else '1';
   
   frame_s(frame_t'high - 0) <= '1'; -- Stop
@@ -86,7 +86,7 @@ begin
       index_s(frame_t'low) <= '1';
       index_s(frame_t'high downto frame_t'low + 1) <= (others => '0');
     elsif rising_edge(clk) then
-      if state_s = state_send_c then
+      if state_s = send_state_c then
         index_s <= index_s(frame_t'high - 1 downto frame_t'low) & index_s(frame_t'high);
       end if;
     end if;
@@ -95,28 +95,28 @@ begin
   sequence : process(clk, rst)
   begin
     if rst = '1' then
-      state_s <= state_idle_c;
+      state_s <= idle_state_c;
     elsif rising_edge(clk) then
       case state_s is
-        when state_idle_c =>
+        when idle_state_c =>
           if txn = '1' then
-            state_s <= state_send_c;
+            state_s <= send_state_c;
           end if;
-        when state_send_c =>
-          state_s <= state_wait_c;
-        when state_wait_c =>
+        when send_state_c =>
+          state_s <= wait_state_c;
+        when wait_state_c =>
           if timer_s = '1' then
             if done_s = '1' then
-              state_s <= state_idle_c;
+              state_s <= idle_state_c;
             else
-              state_s <= state_send_c;
+              state_s <= send_state_c;
             end if;
           end if;
       end case;
     end if;
   end process;
   
-  sending_s <= '1' when state_s = state_wait_c
+  sending_s <= '1' when state_s = wait_state_c
           else '0';
   trigger : rs232_counter_e port map(
     clock  => clk,
