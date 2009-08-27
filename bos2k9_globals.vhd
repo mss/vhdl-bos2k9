@@ -34,6 +34,12 @@ package bos2k9_globals is
   constant ser_115200_c : positive := 434;
   -- Choose one.
   constant ser_clock_div_c : positive := ser_9600_c;
+
+  constant ser_odd_parity_c  : std_logic := '0';
+  constant ser_even_parity_c : std_logic := '1';
+
+  constant ser_parity_enabled_c : std_logic := '1';
+  constant ser_parity_type_c    : std_logic := ser_even_parity_c;
   
   type ser_bus_t is record
     rx : std_logic;

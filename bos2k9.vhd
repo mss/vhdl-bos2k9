@@ -133,7 +133,8 @@ architecture board of bos2k9 is
   component bos2k9_pump is
     generic(
       clock_divider  : positive  := ser_clock_div_c;
-      parity_enabled : std_logic := '1');
+      parity_enabled : std_logic := ser_parity_enabled_c;
+      parity_type    : std_logic := ser_even_parity_c);
     port(
       clock : in  std_logic;
       reset : in  std_logic;
@@ -158,7 +159,7 @@ architecture board of bos2k9 is
   
   signal ready_led_s : std_logic;
   signal error_led_s : std_logic;
-  signal dummy_led_s : std_logic;
+  signal busy_led_s  : std_logic;
   
   signal read_btn_s : std_logic;
   
@@ -189,7 +190,7 @@ begin
     6 => spi_s.mosi,
     5 => spi_s.sck,
     4 => spi_s.cs,
-    3 => dummy_led_s,
+    2 => busy_led_s,
     1 => ready_led_s,
     0 => error_led_s,
     others => '0');
@@ -223,7 +224,7 @@ begin
     -- Map the board outputs.
     ready_led_s <= sd_ready_s;
     error_led_s <= sd_error_s;
-    dummy_led_s <= pumping_s;
+    busy_led_s  <= pumping_s;
     byte_led_s  <= (others => '0');
     
     -- We can address the first 256 blocks only.
