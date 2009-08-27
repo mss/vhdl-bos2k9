@@ -134,8 +134,8 @@ begin
     elsif rising_edge(clock) then
       if busy_s = '0' then
         busy_s <= txn;
-      elsif state_s = next_state_c then
-        busy_s <= not done_s;
+      elsif state_s = idle_state_c then
+        busy_s <= '0';
       end if;
     end if;
   end process;
