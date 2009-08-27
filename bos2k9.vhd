@@ -158,7 +158,7 @@ architecture board of bos2k9 is
   
   signal ready_led_s : std_logic;
   signal error_led_s : std_logic;
-  signal dummy_led_s : std_logic;
+  signal busy_led_s  : std_logic;
   
   signal read_btn_s : std_logic;
   
@@ -189,7 +189,7 @@ begin
     6 => spi_s.mosi,
     5 => spi_s.sck,
     4 => spi_s.cs,
-    3 => dummy_led_s,
+    2 => busy_led_s,
     1 => ready_led_s,
     0 => error_led_s,
     others => '0');
@@ -223,7 +223,7 @@ begin
     -- Map the board outputs.
     ready_led_s <= sd_ready_s;
     error_led_s <= sd_error_s;
-    dummy_led_s <= pumping_s;
+    busy_led_s  <= pumping_s;
     byte_led_s  <= (others => '0');
     
     -- We can address the first 256 blocks only.
