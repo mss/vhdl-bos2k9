@@ -1,8 +1,19 @@
 -----------------------------------------------------------------------
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
 --
--- TODO
--- 
+-- This is the sending part of a RS232 UART.  The speed is specified
+-- by the `clock_divider` and the frame format by `data_width` (number
+-- of data bits per frame) `parity_enabled` and `parity_type` (`0` 
+-- being odd parity, `1` even).  When no parity is used, the sender
+-- will generate two stop bits.  The latter may change in the future.
+-- The `clock_divider` should not be lower than 4.
+--
+-- The data applied to `txd` is sent as soon as the shift trigger `txn`
+-- is high for one clock.  While data is shifted out via `tx`, the busy
+-- flag `txb` is high.
+--
+-- The data at the `txd` input has to be stable while `txb` is high.
+--
 -----------------------------------------------------------------------
 -- This entity is part of the following library:
 -- pragma library fhw_rs232

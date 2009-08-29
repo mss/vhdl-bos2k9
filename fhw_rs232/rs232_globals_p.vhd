@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
 --
--- TODO
+-- Some helper stuff for the UART implementation.
 -- 
 -----------------------------------------------------------------------
 -- This entity is part of the following library:
@@ -14,6 +14,8 @@ use ieee.numeric_std.all;
 
 package rs232_globals_p is
   
+  -- Calculate the parity for the `word`, `even` or not `even` 
+  -- (ie. odd).
   function get_parity(
     word : std_logic_vector;
     even : std_logic) return std_logic;

@@ -1,7 +1,8 @@
  -----------------------------------------------------------------------
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
 --
--- TODO
+-- TODO: This is an incomplete UART implementation, only including a 
+-- sender.  See `rs232_send` for details.
 -- 
 -----------------------------------------------------------------------
 -- This entity is part of the following library:

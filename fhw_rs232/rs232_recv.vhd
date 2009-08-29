@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------
 -- Copyright (c) 2009 Malte S. Stretz <http://msquadrat.de> 
 --
--- TODO
+-- TODO: This receiver doesn't have any implementation.
 -- 
 -----------------------------------------------------------------------
 -- This entity is part of the following library:

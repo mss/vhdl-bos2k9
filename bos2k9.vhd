@@ -30,11 +30,13 @@
 --  * `SD_CMD` is the SPI MOSI.
 --  * `SD_DAT3` is the SPI CS.
 --  * `SD_CLK` is the SPI SCK.
+--  * `UART_RXD` is the serial input.
+--  * `UART_TXD` is the serial output.
 --
 -- LEDG(0) should be always on and represents a powered system. The 
 -- `reset` is wired to `SW(17)`, so the switch should be off when these
 -- system is started.  Once `reset` is off (ie. the switch on), the card
--- can be initialized (and later reset) by pressing `KEY(0)`.  Once
+-- is initialized as soon as it is inserted.  Whe n this is successful,
 -- LEDG(2) is led, the system is ready to read a block; if an error 
 -- occurs, LEDG(1) is switched on instead.
 --
@@ -48,12 +50,7 @@
 -- board tend to break, this cannot be ensured but a longer press 
 -- doesn't break anything.
 --
--- The currently via SW(8) to SW(15) selected byte is displayed on the
--- LEDs LEDR(0) to LEDR(7).
---
--- Because only eight address bits are wired, only half the block can 
--- be displayed.  Both this and the above limitation doesn't matter as 
--- this is a test setup only.
+-- The whole block is output via `UART_TXD`.
 --
 -- For debugging purposes, the SPI bus is also wired to the LEDs 
 -- LEDG(7) to LEDG(4). 
@@ -231,8 +228,14 @@ begin
     sd_address_s(std_logic_block_address_t'high downto std_logic_byte_t'high + 1) <= (others => '0');
     sd_address_s(std_logic_byte_t'range) <= byte_sw1_s;
     
+    -- Make sure we can't accidently start another read action while 
+    -- something else is still going on.
     sd_start_s <= read_btn_s and sd_ready_s and not pumping_s;
-  
+    
+    -- Magic wiring between the `sd_host` and the timeout/poll counter:
+    -- The counter will trigger the `init` port each `init_ticks_c` 
+    -- but once the `sd_host` is initialized, the `ready` line will 
+    -- keep the counter via the `clr` line at zero.
     sd_io : sd_host port map(
       clk => clock_s,
       rst => reset_s,

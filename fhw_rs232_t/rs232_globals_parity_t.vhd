@@ -22,6 +22,8 @@ entity rs232_globals_parity_t is
 end rs232_globals_parity_t;
 
 architecture test of rs232_globals_parity_t is
+  -- The first parameter is the `word` to calculate the parities (both 
+  -- even and odd) of, the second is the `expect`ed value for even parity.
   procedure t(
     word   : in std_logic_vector;
     expect : in std_logic) is
@@ -33,23 +35,31 @@ architecture test of rs232_globals_parity_t is
     e_p_v := get_parity(word, '1'); assert e_p_v = e_e_v report "wrong E parity for " & str(word) & ": " & str(e_p_v) & " != " & str(e_e_v);
   end t;
 begin
-  t("0", '0');
-  t("1", '1');
-  
-  t("00", '0');
-  t("01", '1');
-  t("10", '1');
-  t("11", '0');
-  
-  t("000", '0');
-  t("001", '1');
-  t("010", '1');
-  t("011", '0');
-  t("100", '1');
-  t("101", '0');
-  t("110", '0');
-  t("111", '1');
-  
+  -- We'll test the parity for 1, 2, 3 and 4 bit words.  That includes
+  -- the shortest possible word lengths with even and odd number of
+  -- digits and the next two lengths.  Everything else doesn't make a 
+  -- difference.
+
+  -- word - expected
+  -------------------
+  -- 1 bit
+  t("0",    '0');
+  t("1",    '1');
+  -- 2 bit
+  t("00",   '0');
+  t("01",   '1');
+  t("10",   '1');
+  t("11",   '0');
+  -- 3 bit
+  t("000",  '0');
+  t("001",  '1');
+  t("010",  '1');
+  t("011",  '0');
+  t("100",  '1');
+  t("101",  '0');
+  t("110",  '0');
+  t("111",  '1');
+  -- 4 bit
   t("0000", '0');
   t("0001", '1');
   t("0010", '1');
